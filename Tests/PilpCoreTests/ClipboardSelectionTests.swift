@@ -31,4 +31,29 @@ struct ClipboardSelectionTests {
 
         #expect(selection.index == 0)
     }
+
+    @Test("centers the selected item in a wrapping five-item ribbon")
+    func centersSelectionInRibbon() {
+        let selection = ClipboardSelection(index: 0)
+
+        #expect(
+            selection.centeredIndices(
+                maximumCount: 5,
+                itemCount: 5
+            ) == [3, 4, 0, 1, 2]
+        )
+    }
+
+    @Test("does not duplicate items when the ribbon is wider than history")
+    func avoidsDuplicateRibbonItems() {
+        let selection = ClipboardSelection(index: 1)
+
+        let indices = selection.centeredIndices(
+            maximumCount: 5,
+            itemCount: 3
+        )
+
+        #expect(indices == [0, 1, 2])
+        #expect(Set(indices).count == 3)
+    }
 }

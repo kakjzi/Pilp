@@ -45,8 +45,23 @@ final class ClipboardModel: NSObject, ObservableObject {
         selectedItem == nil ? 0 : selection.index + 1
     }
 
+    var ribbonItems: [ClipboardItem] {
+        selection.centeredIndices(
+            maximumCount: 5,
+            itemCount: items.count
+        ).map { items[$0] }
+    }
+
     func moveSelection(by offset: Int) {
         selection.move(by: offset, itemCount: items.count)
+    }
+
+    func selectItem(id: ClipboardItem.ID) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else {
+            return
+        }
+
+        selection = ClipboardSelection(index: index)
     }
 
     @discardableResult
@@ -116,13 +131,34 @@ final class ClipboardModel: NSObject, ObservableObject {
     ) -> ClipboardContent? {
         guard
             let data = pasteboard.data(forType: pasteboardType),
-            data.count <= Self.maximumImageBytes,
-            NSImage(data: data) != nil
+            let image = NSImage(data: data)
         else {
             return nil
         }
 
-        return .image(ClipboardImage(data: data, format: format))
+        let storedImage: ClipboardImage
+        switch format {
+        case .png:
+            storedImage = ClipboardImage(data: data, format: .png)
+        case .tiff:
+            guard
+                let tiffData = image.tiffRepresentation,
+                let bitmap = NSBitmapImageRep(data: tiffData),
+                let pngData = bitmap.representation(
+                    using: .png,
+                    properties: [:]
+                )
+            else {
+                return nil
+            }
+            storedImage = ClipboardImage(data: pngData, format: .png)
+        }
+
+        guard storedImage.byteCount <= Self.maximumImageBytes else {
+            return nil
+        }
+
+        return .image(storedImage)
     }
 }
 

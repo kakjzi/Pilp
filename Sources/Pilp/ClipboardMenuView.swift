@@ -4,6 +4,7 @@ import SwiftUI
 
 struct ClipboardMenuView: View {
     @ObservedObject var model: ClipboardModel
+    let onShowPicker: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -145,11 +146,18 @@ struct ClipboardMenuView: View {
 
     private var footer: some View {
         HStack {
-            Text("← → Navigate   ↵ Copy   then ⌘V")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Button {
+                onShowPicker()
+            } label: {
+                Label("Show Picker", systemImage: "rectangle.stack")
+            }
 
             Spacer()
+
+            SettingsLink {
+                Image(systemName: "gearshape")
+            }
+            .help("Settings")
 
             Button("Quit") {
                 NSApplication.shared.terminate(nil)

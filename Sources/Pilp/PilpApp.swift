@@ -2,12 +2,22 @@ import SwiftUI
 
 @main
 struct PilpApp: App {
-    @StateObject private var model = ClipboardModel()
+    @NSApplicationDelegateAdaptor(PilpAppDelegate.self)
+    private var appDelegate
 
     var body: some Scene {
         MenuBarExtra("Pilp", systemImage: "clipboard") {
-            ClipboardMenuView(model: model)
+            ClipboardMenuView(
+                model: appDelegate.model,
+                onShowPicker: appDelegate.overlayController.show
+            )
         }
         .menuBarExtraStyle(.window)
+
+        Settings {
+            PilpSettingsView(
+                shortcutSettings: appDelegate.shortcutSettings
+            )
+        }
     }
 }
