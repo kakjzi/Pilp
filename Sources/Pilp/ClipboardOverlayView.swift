@@ -81,7 +81,11 @@ struct ClipboardOverlayView: View {
 
                 Spacer()
 
-                Text("\(model.selectedPosition) of \(model.items.count)")
+                Text(L10n.format(
+                    "overlay.position_format",
+                    model.selectedPosition,
+                    model.items.count
+                ))
                     .font(.system(size: 15, weight: .medium, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(.black.opacity(0.52))
@@ -128,10 +132,10 @@ struct ClipboardOverlayView: View {
                 .font(.system(size: 30, weight: .medium))
                 .foregroundStyle(.black.opacity(0.34))
 
-            Text("Copy something first")
+            Text(L10n.text("overlay.empty.title"))
                 .font(.system(size: 18, weight: .semibold))
 
-            Text("Text and images copied while Pilp is running appear here.")
+            Text(L10n.text("overlay.empty.description"))
                 .font(.system(size: 13))
                 .foregroundStyle(.secondary)
         }
@@ -141,15 +145,15 @@ struct ClipboardOverlayView: View {
     private var footer: some View {
         ZStack {
             HStack(spacing: 34) {
-                ShortcutHint(keys: "← →", label: "Move")
-                ShortcutHint(keys: "↵", label: "Copy")
-                ShortcutHint(keys: "esc", label: "Close")
+                ShortcutHint(keys: "← →", label: L10n.text("overlay.move"))
+                ShortcutHint(keys: "↵", label: L10n.text("overlay.copy"))
+                ShortcutHint(keys: "esc", label: L10n.text("overlay.close"))
             }
 
             HStack {
                 Spacer(minLength: 0)
 
-                Text("then ⌘V")
+                Text(L10n.text("overlay.then_paste"))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(.black.opacity(0.42))
             }
@@ -310,9 +314,9 @@ private extension ClipboardContent {
     var badgeTitle: String {
         switch self {
         case .text:
-            "TEXT"
+            L10n.text("content.text.badge")
         case .image:
-            "IMAGE"
+            L10n.text("content.image.badge")
         }
     }
 }

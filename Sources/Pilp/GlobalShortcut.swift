@@ -68,7 +68,7 @@ struct ShortcutDefinition: Codable, Equatable {
         case 48:
             return "⇥"
         case 49:
-            return "Space"
+            return L10n.text("shortcut.key.space")
         case 51:
             return "⌫"
         case 53:
@@ -146,7 +146,7 @@ final class ShortcutSettings: ObservableObject {
     private func registerShortcut() {
         registrationError = monitor.register(shortcut)
             ? nil
-            : "That shortcut is already used by macOS or another app."
+            : L10n.text("shortcut.registration_error")
     }
 }
 

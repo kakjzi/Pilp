@@ -8,8 +8,15 @@
     <string>Pilp</string>
     <key>CFBundleIdentifier</key>
     <string>com.kakjzi.Pilp</string>
+    <key>CFBundleIconFile</key>
+    <string>Pilp.icns</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>en</string>
+        <string>ko</string>
+    </array>
     <key>CFBundleName</key>
     <string>Pilp</string>
     <key>CFBundlePackageType</key>

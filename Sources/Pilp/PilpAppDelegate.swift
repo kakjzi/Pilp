@@ -7,6 +7,7 @@ final class PilpAppDelegate: NSObject, NSApplicationDelegate {
 
     let model: ClipboardModel
     let overlayController: ClipboardOverlayController
+    let commandVSettings: CommandVHoldSettings
     let shortcutSettings: ShortcutSettings
     let updater: AppUpdater
     private var firstLaunchWindowController: FirstLaunchWindowController?
@@ -18,6 +19,9 @@ final class PilpAppDelegate: NSObject, NSApplicationDelegate {
         self.model = model
         self.overlayController = overlayController
         self.updater = updater
+        self.commandVSettings = CommandVHoldSettings {
+            overlayController.show()
+        }
         self.shortcutSettings = ShortcutSettings {
             overlayController.toggle()
         }
@@ -25,6 +29,14 @@ final class PilpAppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if commandVSettings.isEnabled,
+            !commandVSettings.isAccessibilityGranted
+        {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                self.commandVSettings.requestAccessibilityPermission()
+            }
+        }
+
         if CommandLine.arguments.contains("--show-picker") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                 self?.overlayController.show()
@@ -53,11 +65,16 @@ final class PilpAppDelegate: NSObject, NSApplicationDelegate {
             }
 
             let controller = FirstLaunchWindowController(
+                commandVSettings: commandVSettings,
                 shortcutSettings: shortcutSettings,
                 updater: updater
             )
             firstLaunchWindowController = controller
             controller.present()
         }
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        commandVSettings.refreshPermissionStatus()
     }
 }

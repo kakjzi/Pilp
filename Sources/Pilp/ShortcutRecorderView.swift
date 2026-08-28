@@ -37,7 +37,9 @@ final class ShortcutRecorderControl: NSControl {
     var shortcut: ShortcutDefinition? {
         didSet {
             needsDisplay = true
-            setAccessibilityValue(shortcut?.displayString ?? "Not set")
+            setAccessibilityValue(
+                shortcut?.displayString ?? L10n.text("shortcut.not_set")
+            )
         }
     }
 
@@ -149,8 +151,8 @@ final class ShortcutRecorderControl: NSControl {
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
         let text = isRecording
-            ? "Press shortcut…"
-            : shortcut?.displayString ?? "Record Shortcut"
+            ? L10n.text("shortcut.recording")
+            : shortcut?.displayString ?? L10n.text("shortcut.record")
         let textRect = bounds.insetBy(dx: 12, dy: 6)
         (text as NSString).draw(
             in: textRect,
@@ -164,7 +166,7 @@ final class ShortcutRecorderControl: NSControl {
         if shortcut != nil, !isRecording {
             let symbol = NSImage(
                 systemSymbolName: "xmark.circle.fill",
-                accessibilityDescription: "Clear shortcut"
+                accessibilityDescription: L10n.text("shortcut.clear")
             )
             symbol?.isTemplate = true
             symbol?.draw(
@@ -188,7 +190,9 @@ final class ShortcutRecorderControl: NSControl {
     private func configureAccessibility() {
         setAccessibilityElement(true)
         setAccessibilityRole(.button)
-        setAccessibilityLabel("Global shortcut")
-        setAccessibilityValue(shortcut?.displayString ?? "Not set")
+        setAccessibilityLabel(L10n.text("settings.shortcut.custom"))
+        setAccessibilityValue(
+            shortcut?.displayString ?? L10n.text("shortcut.not_set")
+        )
     }
 }

@@ -27,11 +27,16 @@ struct ClipboardMenuView: View {
 
     private var header: some View {
         HStack {
+            Image(nsImage: NSApplication.shared.applicationIconImage)
+                .resizable()
+                .interpolation(.high)
+                .frame(width: 32, height: 32)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text("Pilp")
                     .font(.headline)
 
-                Text("Pick it. Paste it your way.")
+                Text(L10n.text("tagline"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -57,7 +62,7 @@ struct ClipboardMenuView: View {
             Button {
                 copyAndClose()
             } label: {
-                Label("Copy selected clip", systemImage: "doc.on.doc")
+                Label(L10n.text("menu.copy_selected"), systemImage: "doc.on.doc")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
@@ -127,9 +132,9 @@ struct ClipboardMenuView: View {
         Group {
             switch content {
             case .text:
-                Label("Text", systemImage: "text.alignleft")
+                Label(L10n.text("content.text"), systemImage: "text.alignleft")
             case .image:
-                Label("Image", systemImage: "photo")
+                Label(L10n.text("content.image"), systemImage: "photo")
             }
         }
         .font(.caption.weight(.semibold))
@@ -154,15 +159,18 @@ struct ClipboardMenuView: View {
             }
             .frame(maxWidth: .infinity)
         } else {
-            ContentUnavailableView("Preview unavailable", systemImage: "photo")
+            ContentUnavailableView(
+                L10n.text("preview.unavailable"),
+                systemImage: "photo"
+            )
         }
     }
 
     private var emptyState: some View {
         ContentUnavailableView(
-            "No clips yet",
+            L10n.text("clips.empty.title"),
             systemImage: "clipboard",
-            description: Text("Copy text or an image while Pilp is running.")
+            description: Text(L10n.text("clips.empty.description"))
         )
         .frame(height: 260)
     }
@@ -172,7 +180,7 @@ struct ClipboardMenuView: View {
             Button {
                 onShowPicker()
             } label: {
-                Label("Show Picker", systemImage: "rectangle.stack")
+                Label(L10n.text("menu.show_picker"), systemImage: "rectangle.stack")
             }
 
             Spacer()
@@ -183,16 +191,16 @@ struct ClipboardMenuView: View {
                 Image(systemName: "arrow.triangle.2.circlepath")
             }
             .disabled(!updater.canCheckForUpdates)
-            .help("Check for Updates")
-            .accessibilityLabel("Check for Updates")
+            .help(L10n.text("menu.check_updates"))
+            .accessibilityLabel(L10n.text("menu.check_updates"))
 
             SettingsLink {
                 Image(systemName: "gearshape")
             }
-            .help("Settings")
-            .accessibilityLabel("Settings")
+            .help(L10n.text("menu.settings"))
+            .accessibilityLabel(L10n.text("menu.settings"))
 
-            Button("Quit") {
+            Button(L10n.text("menu.quit")) {
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q")

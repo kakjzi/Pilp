@@ -53,7 +53,14 @@ mkdir -p \
 
 install -m 755 "$pilp_bin_dir/Pilp" "$pilp_app_dir/Contents/MacOS/Pilp"
 install -m 644 "$pilp_repo_dir/Support/Info.plist" "$pilp_app_dir/Contents/Info.plist"
+install -m 644 "$pilp_repo_dir/Support/Assets/Pilp.icns" "$pilp_app_dir/Contents/Resources/Pilp.icns"
 ditto "$pilp_sparkle_framework" "$pilp_app_dir/Contents/Frameworks/Sparkle.framework"
+ditto \
+    "$pilp_repo_dir/Support/Localization/en.lproj" \
+    "$pilp_app_dir/Contents/Resources/en.lproj"
+ditto \
+    "$pilp_repo_dir/Support/Localization/ko.lproj" \
+    "$pilp_app_dir/Contents/Resources/ko.lproj"
 
 if [[ -n "$pilp_version" ]]; then
     /usr/libexec/PlistBuddy \

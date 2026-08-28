@@ -1,0 +1,60 @@
+"tagline" = "Pick it. Paste it your way.";
+
+"content.text" = "Text";
+"content.image" = "Image";
+"content.text.badge" = "TEXT";
+"content.image.badge" = "IMAGE";
+"preview.unavailable" = "Preview unavailable";
+"clips.empty.title" = "No clips yet";
+"clips.empty.description" = "Copy text or an image while Pilp is running.";
+
+"menu.copy_selected" = "Copy selected clip";
+"menu.show_picker" = "Show Picker";
+"menu.check_updates" = "Check for Updates";
+"menu.settings" = "Settings";
+"menu.quit" = "Quit";
+
+"overlay.position_format" = "%1$d of %2$d";
+"overlay.empty.title" = "Copy something first";
+"overlay.empty.description" = "Text and images copied while Pilp is running appear here.";
+"overlay.move" = "Move";
+"overlay.copy" = "Copy";
+"overlay.close" = "Close";
+"overlay.then_paste" = "then ⌘V";
+
+"settings.title" = "Pilp Settings";
+"settings.get_started.title" = "Get started";
+"settings.get_started.description" = "Three quick steps, entirely from the keyboard.";
+"settings.step.copy.title" = "Copy";
+"settings.step.copy.detail" = "Copy text or an image normally.";
+"settings.step.pick.title" = "Pick";
+"settings.step.pick.detail" = "Hold ⌘V, then move with ← →.";
+"settings.step.paste.title" = "Paste";
+"settings.step.paste.detail" = "Press Return, then ⌘V.";
+"settings.picker_controls.title" = "Open the picker";
+"settings.picker_controls.description" = "Hold ⌘V or use a custom shortcut from any app.";
+"settings.command_v.toggle" = "Hold ⌘V to open the picker";
+"settings.command_v.permission" = "Accessibility access lets Pilp distinguish a quick paste from a hold.";
+"settings.command_v.allow" = "Allow Access";
+"settings.shortcut.custom" = "Custom shortcut";
+"settings.updates.title" = "Updates";
+"settings.updates.description" = "Stay current without downloading Pilp again by hand.";
+"settings.updates.auto_check" = "Automatically check for updates";
+"settings.updates.auto_download" = "Download updates automatically";
+"settings.updates.verified" = "Downloaded updates are verified before installation.";
+"settings.updates.check_now" = "Check Now";
+"settings.updates.check_help" = "Check GitHub Releases for a newer version of Pilp";
+"settings.privacy" = "Clipboard history stays in memory on this Mac and clears when Pilp quits. The hold gesture filters only ⌘V events. Update checks only contact the Pilp release feed.";
+
+"shortcut.not_set" = "Not set";
+"shortcut.recording" = "Press shortcut…";
+"shortcut.record" = "Record Shortcut";
+"shortcut.clear" = "Clear shortcut";
+"shortcut.registration_error" = "That shortcut is already used by macOS or another app.";
+"shortcut.key.space" = "Space";
+"command_v.activation_error" = "Pilp could not start the Command-V listener. Try turning the feature off and on again.";
+
+"welcome.title" = "Welcome to Pilp";
+"version.full_format" = "Version %@ (%@)";
+"version.short_format" = "Version %@";
+"version.development" = "Development build";

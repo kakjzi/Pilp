@@ -1,6 +1,5 @@
 import Combine
 import Foundation
-import PilpCore
 import Sparkle
 
 @MainActor
@@ -41,17 +40,39 @@ final class AppUpdater: ObservableObject {
     }
 
     var currentVersionDescription: String {
-        AppVersionInfo.displayVersion(
-            shortVersion: Bundle.main.object(
-                forInfoDictionaryKey: "CFBundleShortVersionString"
-            ) as? String,
-            buildVersion: Bundle.main.object(
-                forInfoDictionaryKey: "CFBundleVersion"
-            ) as? String
+        guard let shortVersion = nonEmptyBundleValue(
+            forInfoDictionaryKey: "CFBundleShortVersionString"
+        ) else {
+            return L10n.text("version.development")
+        }
+
+        guard let buildVersion = nonEmptyBundleValue(
+            forInfoDictionaryKey: "CFBundleVersion"
+        ) else {
+            return L10n.format("version.short_format", shortVersion)
+        }
+
+        return L10n.format(
+            "version.full_format",
+            shortVersion,
+            buildVersion
         )
     }
 
     func checkForUpdates() {
         controller.checkForUpdates(nil)
+    }
+
+    private func nonEmptyBundleValue(
+        forInfoDictionaryKey key: String
+    ) -> String? {
+        guard let value = Bundle.main.object(
+            forInfoDictionaryKey: key
+        ) as? String else {
+            return nil
+        }
+
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }

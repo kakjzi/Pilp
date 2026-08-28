@@ -17,6 +17,7 @@ struct PilpApp: App {
 
         Settings {
             PilpSettingsView(
+                commandVSettings: appDelegate.commandVSettings,
                 shortcutSettings: appDelegate.shortcutSettings,
                 updater: appDelegate.updater
             )

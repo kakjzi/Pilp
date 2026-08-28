@@ -4,19 +4,21 @@ import SwiftUI
 @MainActor
 final class FirstLaunchWindowController: NSWindowController {
     init(
+        commandVSettings: CommandVHoldSettings,
         shortcutSettings: ShortcutSettings,
         updater: AppUpdater
     ) {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 480, height: 570),
+            contentRect: NSRect(x: 0, y: 0, width: 520, height: 690),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
         )
-        window.title = "Welcome to Pilp"
+        window.title = L10n.text("welcome.title")
         window.isReleasedWhenClosed = false
         window.contentViewController = NSHostingController(
             rootView: PilpSettingsView(
+                commandVSettings: commandVSettings,
                 shortcutSettings: shortcutSettings,
                 updater: updater
             )

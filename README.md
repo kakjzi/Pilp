@@ -1,5 +1,9 @@
 # Pilp
 
+<p align="center">
+  <img src="Support/Assets/PilpIcon-1024.png" width="160" alt="Pilp app icon">
+</p>
+
 Pick it. Paste it your way.
 
 Pilp is an open-source macOS clipboard picker. It watches copied text and images, then opens a fast horizontal picker from a shortcut you choose.
@@ -12,10 +16,25 @@ Pilp supports macOS only. Official builds are published exclusively through [Git
 
 Early Alpha builds are ad-hoc signed and not notarized while the project is being validated. macOS will warn before opening one of these builds. Only download Pilp from this repository.
 
+## Languages
+
+Pilp includes English and Korean in the same app. It automatically follows the preferred language selected for Pilp in macOS **System Settings → General → Language & Region → Applications**.
+
+### 한국어 안내
+
+Pilp는 macOS용 오픈소스 클립보드 선택 도구입니다. 같은 설치 파일에 한국어와 영어가 모두 포함되어 있으며 Mac의 앱 언어 설정을 자동으로 따릅니다.
+
+1. [GitHub Releases](https://github.com/kakjzi/Pilp/releases)에서 **Pre-release**로 표시된 ZIP을 내려받습니다.
+2. 압축을 풀고 `Pilp.app`을 응용 프로그램 폴더로 옮깁니다.
+3. Apple에 등록되지 않은 Alpha 버전이므로 최초 실행이 막히면 **시스템 설정 → 개인정보 보호 및 보안 → 보안 → 확인 없이 열기**를 선택합니다.
+4. `⌘V 길게 누르기`를 사용하려면 처음 나타나는 안내에 따라 Pilp의 **손쉬운 사용** 권한을 허용합니다.
+5. `⌘V`를 짧게 누르면 평소처럼 바로 붙여넣고, 길게 누르면 선택 창이 열립니다. ← → 키로 고르고 Return을 누른 뒤 ⌘V로 붙여넣으면 됩니다.
+
 ## What works
 
 - Watches text, PNG, and TIFF clipboard changes while Pilp is running
 - Opens a floating picker from a user-recorded global shortcut
+- Opens the picker when Command-V is held, while a quick Command-V still pastes normally
 - Opens a short setup guide on first launch
 - Shows five recent clips in a movable horizontal ribbon near the bottom of the active screen
 - Shows the source app and capture time for each clip
@@ -30,17 +49,18 @@ Early Alpha builds are ad-hoc signed and not notarized while the project is bein
 - Stores history in memory only and clears it when the app quits
 - Checks GitHub Releases for updates manually or automatically with Sparkle
 - Can download verified updates in the background and install them through the standard macOS update flow
+- Displays its interface in Korean or English from the same app bundle
 
 ## Use Pilp
 
 1. Open `Pilp.app`. The first-launch guide appears and a Pilp icon is added to the macOS menu bar.
-2. Record a global shortcut in the guide. Pilp does not take over a default shortcut on first launch.
-3. In **Updates**, choose whether Pilp should check for and download new versions automatically.
-4. Copy text or an image as usual with `Command-C`.
-5. Press your Pilp shortcut from any app. You can also choose **Show Picker** from the menu bar icon.
-6. Press `Left Arrow` or `Right Arrow` to choose a clip.
-7. Press `Return` to copy the selected clip back to the clipboard, or `Escape` to close the picker.
-8. Press `Command-V` in the destination app.
+2. Allow Accessibility access when macOS asks. Pilp uses it only to distinguish a quick `Command-V` from a hold and to replay a normal paste.
+3. Optionally record a separate global shortcut in the guide.
+4. In **Updates**, choose whether Pilp should check for and download new versions automatically.
+5. Copy text or an image as usual with `Command-C`.
+6. Tap `Command-V` to paste normally, or hold it for about half a second to open Pilp. You can also use your custom shortcut or choose **Show Picker** from the menu bar icon.
+7. Press `Left Arrow` or `Right Arrow` to choose a clip.
+8. Press `Return` to copy the selected clip back to the clipboard, or `Escape` to close the picker. Then tap `Command-V` in the destination app.
 
 ## Install an unsigned Alpha
 
@@ -108,7 +128,7 @@ Versions released before Sparkle was embedded cannot update themselves and must 
 
 ## Privacy
 
-Pilp does not use an account, telemetry, or persistent clipboard storage. Clipboard contents stay on the Mac. When update checking is enabled—or when **Check Now** is pressed—Pilp contacts the public GitHub-hosted update feed and downloads release files only when an update is available.
+Pilp does not use an account, telemetry, or persistent clipboard storage. Clipboard contents stay on the Mac. When the hold gesture is enabled, Pilp uses Accessibility access to filter only `Command-V` key-down and key-up events; it does not record other keystrokes. When update checking is enabled—or when **Check Now** is pressed—Pilp contacts the public GitHub-hosted update feed and downloads release files only when an update is available.
 
 ## License
 

@@ -1,6 +1,8 @@
+import AppKit
 import SwiftUI
 
 struct PilpSettingsView: View {
+    @ObservedObject var commandVSettings: CommandVHoldSettings
     @ObservedObject var shortcutSettings: ShortcutSettings
     @ObservedObject var updater: AppUpdater
 
@@ -16,31 +18,31 @@ struct PilpSettingsView: View {
             privacyNote
         }
         .padding(24)
-        .frame(width: 480)
+        .frame(width: 520)
     }
 
     private var gettingStartedSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             SettingsSectionHeader(
-                title: "Get started",
-                description: "Three quick steps, entirely from the keyboard."
+                title: L10n.text("settings.get_started.title"),
+                description: L10n.text("settings.get_started.description")
             )
 
             HStack(alignment: .top, spacing: 20) {
                 OnboardingStep(
                     number: 1,
-                    title: "Copy",
-                    detail: "Copy text or an image normally."
+                    title: L10n.text("settings.step.copy.title"),
+                    detail: L10n.text("settings.step.copy.detail")
                 )
                 OnboardingStep(
                     number: 2,
-                    title: "Pick",
-                    detail: "Open Pilp and move with ← →."
+                    title: L10n.text("settings.step.pick.title"),
+                    detail: L10n.text("settings.step.pick.detail")
                 )
                 OnboardingStep(
                     number: 3,
-                    title: "Paste",
-                    detail: "Press Return, then ⌘V."
+                    title: L10n.text("settings.step.paste.title"),
+                    detail: L10n.text("settings.step.paste.detail")
                 )
             }
         }
@@ -48,12 +50,13 @@ struct PilpSettingsView: View {
 
     private var title: some View {
         HStack(spacing: 12) {
-            Image(systemName: "rectangle.stack.fill")
-                .font(.system(size: 26, weight: .semibold))
-                .foregroundStyle(.blue)
+            Image(nsImage: NSApplication.shared.applicationIconImage)
+                .resizable()
+                .interpolation(.high)
+                .frame(width: 38, height: 38)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Pilp Settings")
+                Text(L10n.text("settings.title"))
                     .font(.title3.weight(.semibold))
 
                 Text(updater.currentVersionDescription)
@@ -66,12 +69,46 @@ struct PilpSettingsView: View {
     private var shortcutSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             SettingsSectionHeader(
-                title: "Picker shortcut",
-                description: "Open Pilp from any app."
+                title: L10n.text("settings.picker_controls.title"),
+                description: L10n.text("settings.picker_controls.description")
             )
 
+            Toggle(
+                L10n.text("settings.command_v.toggle"),
+                isOn: $commandVSettings.isEnabled
+            )
+
+            if commandVSettings.isEnabled,
+                !commandVSettings.isAccessibilityGranted
+            {
+                HStack(alignment: .top, spacing: 10) {
+                    Label(
+                        L10n.text("settings.command_v.permission"),
+                        systemImage: "hand.raised.fill"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                    Spacer()
+
+                    Button(L10n.text("settings.command_v.allow")) {
+                        commandVSettings.requestAccessibilityPermission()
+                    }
+                }
+            }
+
+            if let activationError = commandVSettings.activationError {
+                Label(
+                    activationError,
+                    systemImage: "exclamationmark.triangle.fill"
+                )
+                .font(.caption)
+                .foregroundStyle(.red)
+            }
+
             HStack {
-                Text("Global shortcut")
+                Text(L10n.text("settings.shortcut.custom"))
 
                 Spacer()
 
@@ -91,12 +128,12 @@ struct PilpSettingsView: View {
     private var updatesSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             SettingsSectionHeader(
-                title: "Updates",
-                description: "Stay current without downloading Pilp again by hand."
+                title: L10n.text("settings.updates.title"),
+                description: L10n.text("settings.updates.description")
             )
 
             Toggle(
-                "Automatically check for updates",
+                L10n.text("settings.updates.auto_check"),
                 isOn: Binding(
                     get: { updater.automaticallyChecksForUpdates },
                     set: { updater.automaticallyChecksForUpdates = $0 }
@@ -104,7 +141,7 @@ struct PilpSettingsView: View {
             )
 
             Toggle(
-                "Download updates automatically",
+                L10n.text("settings.updates.auto_download"),
                 isOn: Binding(
                     get: { updater.automaticallyDownloadsUpdates },
                     set: { updater.automaticallyDownloadsUpdates = $0 }
@@ -113,24 +150,24 @@ struct PilpSettingsView: View {
             .disabled(!updater.allowsAutomaticUpdates)
 
             HStack {
-                Text("Downloaded updates are verified before installation.")
+                Text(L10n.text("settings.updates.verified"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
                 Spacer()
 
-                Button("Check Now") {
+                Button(L10n.text("settings.updates.check_now")) {
                     updater.checkForUpdates()
                 }
                 .disabled(!updater.canCheckForUpdates)
-                .help("Check GitHub Releases for a newer version of Pilp")
+                .help(L10n.text("settings.updates.check_help"))
             }
         }
     }
 
     private var privacyNote: some View {
         Label {
-            Text("Clipboard history stays in memory on this Mac and clears when Pilp quits. Update checks only contact the Pilp release feed.")
+            Text(L10n.text("settings.privacy"))
         } icon: {
             Image(systemName: "lock.shield")
         }

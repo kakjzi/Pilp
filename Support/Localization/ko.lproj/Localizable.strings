@@ -1,0 +1,60 @@
+"tagline" = "고르고, 원하는 방식으로 붙여넣으세요.";
+
+"content.text" = "텍스트";
+"content.image" = "이미지";
+"content.text.badge" = "텍스트";
+"content.image.badge" = "이미지";
+"preview.unavailable" = "미리보기를 표시할 수 없습니다";
+"clips.empty.title" = "아직 복사 기록이 없습니다";
+"clips.empty.description" = "Pilp가 실행 중일 때 텍스트나 이미지를 복사해 보세요.";
+
+"menu.copy_selected" = "선택 항목 복사";
+"menu.show_picker" = "선택 창 열기";
+"menu.check_updates" = "업데이트 확인";
+"menu.settings" = "설정";
+"menu.quit" = "종료";
+
+"overlay.position_format" = "%1$d / %2$d";
+"overlay.empty.title" = "먼저 복사해 보세요";
+"overlay.empty.description" = "Pilp가 실행 중일 때 복사한 텍스트와 이미지가 여기에 표시됩니다.";
+"overlay.move" = "이동";
+"overlay.copy" = "복사";
+"overlay.close" = "닫기";
+"overlay.then_paste" = "그다음 ⌘V";
+
+"settings.title" = "Pilp 설정";
+"settings.get_started.title" = "시작하기";
+"settings.get_started.description" = "키보드만으로 끝나는 세 단계예요.";
+"settings.step.copy.title" = "복사";
+"settings.step.copy.detail" = "텍스트나 이미지를 평소처럼 복사하세요.";
+"settings.step.pick.title" = "고르기";
+"settings.step.pick.detail" = "⌘V를 길게 누르고 ← → 키로 이동하세요.";
+"settings.step.paste.title" = "붙여넣기";
+"settings.step.paste.detail" = "Return을 누른 다음 ⌘V를 누르세요.";
+"settings.picker_controls.title" = "선택 창 열기";
+"settings.picker_controls.description" = "어떤 앱에서든 ⌘V를 길게 누르거나 별도 단축키를 사용하세요.";
+"settings.command_v.toggle" = "⌘V를 길게 눌러 선택 창 열기";
+"settings.command_v.permission" = "짧은 붙여넣기와 길게 누르기를 구분하려면 Pilp에 손쉬운 사용 권한이 필요합니다.";
+"settings.command_v.allow" = "권한 허용";
+"settings.shortcut.custom" = "별도 단축키";
+"settings.updates.title" = "업데이트";
+"settings.updates.description" = "Pilp를 매번 직접 내려받지 않고 최신 상태로 유지하세요.";
+"settings.updates.auto_check" = "업데이트 자동 확인";
+"settings.updates.auto_download" = "업데이트 자동 다운로드";
+"settings.updates.verified" = "다운로드한 업데이트는 설치 전에 검증됩니다.";
+"settings.updates.check_now" = "지금 확인";
+"settings.updates.check_help" = "GitHub Releases에서 새 Pilp 버전 확인";
+"settings.privacy" = "클립보드 기록은 이 Mac의 메모리에만 보관되며 Pilp를 종료하면 지워집니다. 길게 누르기 기능은 ⌘V 입력만 처리합니다. 업데이트 확인 시에는 Pilp 릴리스 피드에만 연결합니다.";
+
+"shortcut.not_set" = "설정 안 됨";
+"shortcut.recording" = "단축키를 누르세요…";
+"shortcut.record" = "단축키 기록";
+"shortcut.clear" = "단축키 지우기";
+"shortcut.registration_error" = "이 단축키는 macOS 또는 다른 앱에서 이미 사용 중입니다.";
+"shortcut.key.space" = "스페이스";
+"command_v.activation_error" = "⌘V 입력 감시를 시작하지 못했습니다. 기능을 껐다가 다시 켜 보세요.";
+
+"welcome.title" = "Pilp에 오신 것을 환영합니다";
+"version.full_format" = "버전 %@ (%@)";
+"version.short_format" = "버전 %@";
+"version.development" = "개발 빌드";
