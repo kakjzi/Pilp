@@ -6,6 +6,10 @@ Pilp is an open-source macOS clipboard picker. It watches copied text and images
 
 > Pilp is under active development. The picker currently copies your selection back to the clipboard; press `Command-V` once more to paste it into the active app.
 
+## Distribution
+
+Pilp supports macOS only. Official builds are published exclusively through [GitHub Releases](https://github.com/kakjzi/Pilp/releases). Pilp is not distributed through the Mac App Store, and Windows or Linux versions are not planned.
+
 ## What works
 
 - Watches text, PNG, and TIFF clipboard changes while Pilp is running
@@ -63,15 +67,15 @@ Build a local ad-hoc signed app bundle:
 open dist/Pilp.app
 ```
 
-The generated `dist/Pilp.app` is for local development. Public releases will require Developer ID signing and notarization.
+The generated `dist/Pilp.app` is for local development. Official GitHub Releases require Developer ID signing and notarization so the directly downloaded app can pass the standard macOS security checks.
 
 The build script disables SwiftPM Keychain lookup because Pilp's package dependencies are public. This avoids unrelated `github.com` password prompts during local builds; Sparkle's private release-signing key remains in the maintainer's Keychain.
 
-## Package a release
+## Package a GitHub Release
 
 Pilp uses Sparkle 2.9.4 and the repository-root `appcast.xml` as its update feed. The private EdDSA signing key stays in the maintainer's macOS Keychain under the account `com.kakjzi.Pilp`; only the public key is committed to the app's `Info.plist`.
 
-Public packaging intentionally stops unless a Developer ID Application identity and a `notarytool` Keychain profile are available. Create a signed, notarized ZIP and update the appcast:
+GitHub Release packaging intentionally stops unless a Developer ID Application identity and a `notarytool` Keychain profile are available. Create a signed, notarized ZIP and update the appcast:
 
 ```sh
 PILP_CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" \
