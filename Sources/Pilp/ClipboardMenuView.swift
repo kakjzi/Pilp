@@ -4,6 +4,7 @@ import SwiftUI
 
 struct ClipboardMenuView: View {
     @ObservedObject var model: ClipboardModel
+    @ObservedObject var updater: AppUpdater
     let onShowPicker: () -> Void
 
     var body: some View {
@@ -83,7 +84,13 @@ struct ClipboardMenuView: View {
     @ViewBuilder
     private func clipboardCard(_ item: ClipboardItem) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            contentBadge(item.content)
+            HStack {
+                contentBadge(item.content)
+
+                Spacer()
+
+                captureMetadata(item)
+            }
 
             switch item.content {
             case let .text(text):
@@ -98,6 +105,22 @@ struct ClipboardMenuView: View {
         .padding(16)
         .frame(maxWidth: .infinity, minHeight: 240, maxHeight: 240)
         .background(.quaternary, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func captureMetadata(_ item: ClipboardItem) -> some View {
+        HStack(spacing: 5) {
+            if let sourceAppName = item.sourceAppName {
+                Text(sourceAppName)
+                    .lineLimit(1)
+
+                Text("·")
+            }
+
+            Text(item.capturedAt, style: .relative)
+                .monospacedDigit()
+        }
+        .font(.caption2)
+        .foregroundStyle(.tertiary)
     }
 
     private func contentBadge(_ content: ClipboardContent) -> some View {
@@ -154,10 +177,20 @@ struct ClipboardMenuView: View {
 
             Spacer()
 
+            Button {
+                updater.checkForUpdates()
+            } label: {
+                Image(systemName: "arrow.triangle.2.circlepath")
+            }
+            .disabled(!updater.canCheckForUpdates)
+            .help("Check for Updates")
+            .accessibilityLabel("Check for Updates")
+
             SettingsLink {
                 Image(systemName: "gearshape")
             }
             .help("Settings")
+            .accessibilityLabel("Settings")
 
             Button("Quit") {
                 NSApplication.shared.terminate(nil)

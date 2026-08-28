@@ -182,6 +182,12 @@ private struct ClipboardRibbonCard: View {
                 .padding(.vertical, 5)
                 .background(.black.opacity(0.78), in: Capsule())
                 .padding(12)
+
+            VStack {
+                Spacer()
+                captureMetadata
+            }
+            .padding(12)
         }
         .background(.white.opacity(0.86))
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
@@ -199,6 +205,26 @@ private struct ClipboardRibbonCard: View {
             radius: isSelected ? 16 : 8,
             y: isSelected ? 7 : 4
         )
+    }
+
+    private var captureMetadata: some View {
+        HStack(spacing: 5) {
+            if let sourceAppName = item.sourceAppName {
+                Text(sourceAppName)
+                    .lineLimit(1)
+
+                Text("·")
+            }
+
+            Text(item.capturedAt, style: .relative)
+                .monospacedDigit()
+        }
+        .font(.system(size: 9, weight: .semibold, design: .rounded))
+        .foregroundStyle(.black.opacity(0.62))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(.ultraThinMaterial, in: Capsule())
+        .frame(maxWidth: .infinity, alignment: .trailing)
     }
 
     @ViewBuilder
@@ -220,6 +246,7 @@ private struct ClipboardRibbonCard: View {
                 )
                 .padding(.horizontal, isSelected ? 20 : 16)
                 .padding(.top, 26)
+                .padding(.bottom, 28)
         case let .image(image):
             if let nsImage = NSImage(data: image.data) {
                 Image(nsImage: nsImage)

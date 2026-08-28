@@ -8,18 +8,37 @@ final class ClipboardModel: NSObject, ObservableObject {
     @Published private var selection = ClipboardSelection()
 
     private static let maximumImageBytes = 20 * 1_024 * 1_024
+    private static let maximumTotalImageBytes = 80 * 1_024 * 1_024
 
     private let pasteboard: NSPasteboard
     private var history: ClipboardHistory
     private var tracker: ClipboardChangeTracker
+    private let sourceAppNameProvider: () -> String?
     private var timer: Timer?
 
-    init(pasteboard: NSPasteboard = .general, historyLimit: Int = 10) {
+    init(
+        pasteboard: NSPasteboard = .general,
+        historyLimit: Int = 10,
+        sourceAppNameProvider: @escaping () -> String? = {
+            guard
+                let app = NSWorkspace.shared.frontmostApplication,
+                app.bundleIdentifier != Bundle.main.bundleIdentifier
+            else {
+                return nil
+            }
+
+            return app.localizedName
+        }
+    ) {
         self.pasteboard = pasteboard
-        self.history = ClipboardHistory(limit: historyLimit)
+        self.history = ClipboardHistory(
+            limit: historyLimit,
+            maximumTotalImageBytes: Self.maximumTotalImageBytes
+        )
         self.tracker = ClipboardChangeTracker(
             initialChangeCount: pasteboard.changeCount
         )
+        self.sourceAppNameProvider = sourceAppNameProvider
 
         super.init()
 
@@ -101,7 +120,10 @@ final class ClipboardModel: NSObject, ObservableObject {
             return
         }
 
-        history.capture(content)
+        history.capture(
+            content,
+            sourceAppName: sourceAppNameProvider()
+        )
         items = history.items
         selection.reset()
     }

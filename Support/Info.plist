@@ -24,5 +24,11 @@
     <true/>
     <key>NSHighResolutionCapable</key>
     <true/>
+    <key>SUAllowsAutomaticUpdates</key>
+    <true/>
+    <key>SUFeedURL</key>
+    <string>https://raw.githubusercontent.com/kakjzi/Pilp/main/appcast.xml</string>
+    <key>SUPublicEDKey</key>
+    <string>4gGrRmGJcK2s1oFLUUKHpfw8kT3JLBkXylVFs6EYTfw=</string>
 </dict>
 </plist>
