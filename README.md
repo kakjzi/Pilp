@@ -10,6 +10,8 @@ Pilp is an open-source macOS clipboard picker. It watches copied text and images
 
 Pilp supports macOS only. Official builds are published exclusively through [GitHub Releases](https://github.com/kakjzi/Pilp/releases). Pilp is not distributed through the Mac App Store, and Windows or Linux versions are not planned.
 
+Early Alpha builds are ad-hoc signed and not notarized while the project is being validated. macOS will warn before opening one of these builds. Only download Pilp from this repository.
+
 ## What works
 
 - Watches text, PNG, and TIFF clipboard changes while Pilp is running
@@ -39,6 +41,15 @@ Pilp supports macOS only. Official builds are published exclusively through [Git
 6. Press `Left Arrow` or `Right Arrow` to choose a clip.
 7. Press `Return` to copy the selected clip back to the clipboard, or `Escape` to close the picker.
 8. Press `Command-V` in the destination app.
+
+## Install an unsigned Alpha
+
+1. Download the ZIP marked **Pre-release** from [GitHub Releases](https://github.com/kakjzi/Pilp/releases).
+2. Unzip it and move `Pilp.app` to the Applications folder.
+3. Try to open Pilp once. macOS will block it because the Alpha is not registered with Apple.
+4. Open **System Settings → Privacy & Security**, scroll to **Security**, then choose **Open Anyway** for Pilp. Apple documents this exception flow in [Open a Mac app from an unknown developer](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/mac/26).
+
+Unsigned Alpha builds are excluded from the Sparkle update feed. Install the first future signed release manually once; automatic updates can continue from signed releases afterward.
 
 ## Next
 
@@ -70,6 +81,14 @@ open dist/Pilp.app
 The generated `dist/Pilp.app` is for local development. Official GitHub Releases require Developer ID signing and notarization so the directly downloaded app can pass the standard macOS security checks.
 
 The build script disables SwiftPM Keychain lookup because Pilp's package dependencies are public. This avoids unrelated `github.com` password prompts during local builds; Sparkle's private release-signing key remains in the maintainer's Keychain.
+
+Package an ad-hoc signed, unnotarized Alpha without changing `appcast.xml`:
+
+```sh
+./scripts/package-alpha.sh 0.1.0 1
+```
+
+The command creates `dist/releases/Pilp-0.1.0-alpha.1.zip` and its SHA-256 checksum. Publish both files under a GitHub prerelease tag such as `v0.1.0-alpha.1`.
 
 ## Package a GitHub Release
 
