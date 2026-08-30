@@ -43,7 +43,7 @@ Pilp는 macOS용 오픈소스 클립보드 선택 도구입니다. 같은 설치
 - Falls back to plain text when an original rich representation is unavailable
 - Previews copied images up to 20 MiB each
 - Keeps total in-memory image history under 80 MiB by removing the oldest images first
-- Keeps pinned clips ahead of the newest unpinned clips for the current session
+- Keeps pinned clips ahead of recent clips while limiting total history to 10 items
 - Moves a copied duplicate back to the front
 - Ignores blank text and trims history to the latest 10 clips
 - Shows search after six clips and matches text or the source app name

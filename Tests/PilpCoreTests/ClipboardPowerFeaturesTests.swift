@@ -53,24 +53,50 @@ struct ClipboardPowerFeaturesTests {
         #expect(history.items.isEmpty)
     }
 
-    @Test("keeps pinned items ahead of recent clips and outside the rolling limit")
-    func keepsPinnedItems() throws {
+    @Test("keeps pinned items first while limiting total history")
+    func keepsPinnedItemsWithinTotalLimit() throws {
         var history = ClipboardHistory(limit: 2)
-        history.capture("keep")
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        history.capture("keep", at: start)
         let pinnedID = try #require(history.items.first?.id)
         let didPin = history.togglePin(id: pinnedID)
         #expect(didPin)
 
-        history.capture("newer")
-        history.capture("newest")
-        history.capture("overflow")
+        history.capture("newer", at: start.addingTimeInterval(1))
+        history.capture("newest", at: start.addingTimeInterval(2))
+        history.capture("overflow", at: start.addingTimeInterval(3))
 
         #expect(history.items.compactMap(\.text) == [
             "keep",
-            "overflow",
-            "newest"
+            "overflow"
         ])
+        #expect(history.items.count == history.limit)
         #expect(history.items.first?.isPinned == true)
+    }
+
+    @Test("a new copy survives when every existing item is pinned")
+    func newestCopySurvivesFullyPinnedHistory() throws {
+        var history = ClipboardHistory(limit: 2)
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+
+        history.capture("first", at: start)
+        let firstID = try #require(history.items.first?.id)
+        let didPinFirst = history.togglePin(id: firstID)
+        #expect(didPinFirst)
+
+        history.capture("second", at: start.addingTimeInterval(1))
+        let secondID = try #require(
+            history.items.first(where: { $0.text == "second" })?.id
+        )
+        let didPinSecond = history.togglePin(id: secondID)
+        #expect(didPinSecond)
+
+        history.capture("newest", at: start.addingTimeInterval(2))
+
+        #expect(history.items.compactMap(\.text) == ["second", "newest"])
+        #expect(history.items.count == history.limit)
+        #expect(history.items.first?.isPinned == true)
+        #expect(history.items.last?.isPinned == false)
     }
 
     @Test("searches text and source app without case sensitivity")

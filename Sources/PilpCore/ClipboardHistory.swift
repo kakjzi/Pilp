@@ -150,19 +150,17 @@ public struct ClipboardHistory: Sendable {
             $0.content == content
         })?.isPinned ?? false
         items.removeAll { $0.content == content }
-        items.insert(
-            ClipboardItem(
-                content: content,
-                capturedAt: capturedAt,
-                sourceAppName: sourceAppName,
-                sourceAppBundleIdentifier: sourceAppBundleIdentifier,
-                isPinned: wasPinned
-            ),
-            at: 0
+        let capturedItem = ClipboardItem(
+            content: content,
+            capturedAt: capturedAt,
+            sourceAppName: sourceAppName,
+            sourceAppBundleIdentifier: sourceAppBundleIdentifier,
+            isPinned: wasPinned
         )
+        items.insert(capturedItem, at: 0)
 
         sortItems()
-        trimUnpinnedItemsToLimit()
+        trimItemsToLimit(preserving: capturedItem.id)
         trimImagesToMemoryLimit()
     }
 
@@ -188,7 +186,6 @@ public struct ClipboardHistory: Sendable {
 
         items[index].isPinned.toggle()
         sortItems()
-        trimUnpinnedItemsToLimit()
         return true
     }
 
@@ -215,14 +212,19 @@ public struct ClipboardHistory: Sendable {
         }
     }
 
-    private mutating func trimUnpinnedItemsToLimit() {
-        while items.lazy.filter({ !$0.isPinned }).count > limit {
-            guard let oldestUnpinnedIndex = items.lastIndex(where: {
-                !$0.isPinned
-            }) else {
+    private mutating func trimItemsToLimit(
+        preserving capturedItemID: ClipboardItem.ID
+    ) {
+        while items.count > limit {
+            let removalIndex = items.lastIndex(where: {
+                !$0.isPinned && $0.id != capturedItemID
+            }) ?? items.lastIndex(where: {
+                $0.id != capturedItemID
+            })
+            guard let removalIndex else {
                 return
             }
-            items.remove(at: oldestUnpinnedIndex)
+            items.remove(at: removalIndex)
         }
     }
 
