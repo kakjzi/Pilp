@@ -35,6 +35,17 @@ playground.xcworkspace
 .build/
 dist/
 
+# Local AI agent workspaces and generated review artifacts
+.codex/
+.agents/
+.claude/
+.cursor/
+AGENTS.md
+CLAUDE.md
+design-qa.md
+codex-*.md
+ai-*.md
+
 # CocoaPods
 #
 # We recommend against adding the Pods directory to your .gitignore. However
