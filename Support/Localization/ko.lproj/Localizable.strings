@@ -2,7 +2,9 @@
 
 "content.text" = "텍스트";
 "content.image" = "이미지";
-"content.text.badge" = "텍스트";
+"content.text.badge" = "PLAIN";
+"content.text.rich" = "PLAIN + 원본";
+"content.text.original_badge" = "원본";
 "content.image.badge" = "이미지";
 "preview.unavailable" = "미리보기를 표시할 수 없습니다";
 "clips.empty.title" = "아직 복사 기록이 없습니다";
@@ -14,11 +16,34 @@
 "menu.settings" = "설정";
 "menu.quit" = "종료";
 
+"paste.plain" = "서식 없이";
+"paste.original" = "원본 서식";
+"history.delete" = "삭제";
+"history.clear" = "기록 전체 비우기";
+"history.clear.confirmation" = "클립보드 기록을 모두 비울까요?";
+"history.pin" = "고정";
+"history.unpin" = "고정 해제";
+"history.search.placeholder" = "클립 검색";
+"history.search.empty" = "검색 결과가 없습니다";
+"history.search.empty_description" = "다른 단어나 앱 이름으로 검색해 보세요.";
+
+"privacy.pause_five_minutes" = "5분간 수집 중지";
+"privacy.resume" = "수집 재개";
+"privacy.resume_countdown" = "재개 (%d초)";
+"privacy.paused_countdown" = "앞으로 %d초 동안 수집하지 않습니다";
+"privacy.capture_active" = "클립보드를 수집하고 있습니다";
+"privacy.excluded_apps" = "제외할 앱";
+"privacy.add_app" = "앱 추가…";
+"privacy.no_excluded_apps" = "제외한 앱이 없습니다.";
+"privacy.choose_app" = "Pilp가 무시할 앱 선택";
+"privacy.exclude" = "제외";
+
 "overlay.position_format" = "%1$d / %2$d";
 "overlay.empty.title" = "먼저 복사해 보세요";
 "overlay.empty.description" = "Pilp가 실행 중일 때 복사한 텍스트와 이미지가 여기에 표시됩니다.";
 "overlay.move" = "이동";
 "overlay.copy" = "복사";
+"overlay.paste" = "붙여넣기";
 "overlay.close" = "닫기";
 "overlay.then_paste" = "그다음 ⌘V";
 
@@ -30,13 +55,19 @@
 "settings.step.pick.title" = "고르기";
 "settings.step.pick.detail" = "⌘V를 길게 누르고 ← → 키로 이동하세요.";
 "settings.step.paste.title" = "붙여넣기";
-"settings.step.paste.detail" = "Return을 누른 다음 ⌘V를 누르세요.";
+"settings.step.paste.detail" = "Return은 서식 없이, Shift-Return은 원본 서식으로 붙여넣습니다.";
 "settings.picker_controls.title" = "선택 창 열기";
 "settings.picker_controls.description" = "어떤 앱에서든 ⌘V를 길게 누르거나 별도 단축키를 사용하세요.";
 "settings.command_v.toggle" = "⌘V를 길게 눌러 선택 창 열기";
-"settings.command_v.permission" = "짧은 붙여넣기와 길게 누르기를 구분하려면 Pilp에 손쉬운 사용 권한이 필요합니다.";
+"settings.command_v.permission" = "Pilp 권한이 없으면 macOS의 키 반복으로 같은 내용이 여러 번 붙을 수 있습니다. 기기 제어 및 데이터 접근에서 Pilp를 켜 주세요.";
 "settings.command_v.allow" = "권한 허용";
 "settings.shortcut.custom" = "별도 단축키";
+"settings.general.title" = "일반";
+"settings.general.description" = "Pilp를 직접 열지 않아도 항상 준비된 상태로 유지합니다.";
+"settings.launch_at_login" = "로그인할 때 Pilp 실행";
+"settings.launch_at_login.requires_approval" = "시스템 설정 → 일반 → 로그인 항목에서 Pilp를 허용해 주세요.";
+"settings.privacy.title" = "개인정보 보호";
+"settings.privacy.description" = "수집을 잠시 멈추거나 지정한 앱의 클립보드 변경을 무시합니다.";
 "settings.updates.title" = "업데이트";
 "settings.updates.description" = "Pilp를 매번 직접 내려받지 않고 최신 상태로 유지하세요.";
 "settings.updates.auto_check" = "업데이트 자동 확인";
@@ -44,7 +75,7 @@
 "settings.updates.verified" = "다운로드한 업데이트는 설치 전에 검증됩니다.";
 "settings.updates.check_now" = "지금 확인";
 "settings.updates.check_help" = "GitHub Releases에서 새 Pilp 버전 확인";
-"settings.privacy" = "클립보드 기록은 이 Mac의 메모리에만 보관되며 Pilp를 종료하면 지워집니다. 길게 누르기 기능은 ⌘V 입력만 처리합니다. 업데이트 확인 시에는 Pilp 릴리스 피드에만 연결합니다.";
+"settings.privacy" = "클립보드 기록, 고정, 검색과 원본 서식은 이 Mac의 메모리에만 보관되며 Pilp를 종료하면 지워집니다. 일시정지 종료 시각과 제외 앱 목록만 저장합니다. 업데이트 확인 시에는 Pilp 릴리스 피드에만 연결합니다.";
 
 "shortcut.not_set" = "설정 안 됨";
 "shortcut.recording" = "단축키를 누르세요…";

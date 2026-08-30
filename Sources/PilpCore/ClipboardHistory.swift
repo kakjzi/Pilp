@@ -23,8 +23,43 @@ public struct ClipboardImage: Equatable, Sendable {
     }
 }
 
+public struct ClipboardText: Equatable, Sendable, ExpressibleByStringLiteral {
+    public let plainText: String
+    public let rtfData: Data?
+    public let htmlData: Data?
+
+    public init(
+        plainText: String,
+        rtfData: Data? = nil,
+        htmlData: Data? = nil
+    ) {
+        self.plainText = plainText
+        self.rtfData = rtfData
+        self.htmlData = htmlData
+    }
+
+    public init(stringLiteral value: String) {
+        self.init(plainText: value)
+    }
+
+    public var hasRichText: Bool {
+        rtfData != nil || htmlData != nil
+    }
+
+    public func representations(
+        for mode: ClipboardPasteMode
+    ) -> ClipboardText {
+        switch mode {
+        case .plain:
+            ClipboardText(plainText: plainText)
+        case .original:
+            self
+        }
+    }
+}
+
 public enum ClipboardContent: Equatable, Sendable {
-    case text(String)
+    case text(ClipboardText)
     case image(ClipboardImage)
 }
 
@@ -33,17 +68,23 @@ public struct ClipboardItem: Identifiable, Equatable, Sendable {
     public let content: ClipboardContent
     public let capturedAt: Date
     public let sourceAppName: String?
+    public let sourceAppBundleIdentifier: String?
+    public internal(set) var isPinned: Bool
 
     public init(
         id: UUID = UUID(),
         content: ClipboardContent,
         capturedAt: Date = Date(),
-        sourceAppName: String? = nil
+        sourceAppName: String? = nil,
+        sourceAppBundleIdentifier: String? = nil,
+        isPinned: Bool = false
     ) {
         self.id = id
         self.content = content
         self.capturedAt = capturedAt
         self.sourceAppName = sourceAppName
+        self.sourceAppBundleIdentifier = sourceAppBundleIdentifier
+        self.isPinned = isPinned
     }
 
     public var text: String? {
@@ -51,7 +92,15 @@ public struct ClipboardItem: Identifiable, Equatable, Sendable {
             return nil
         }
 
-        return text
+        return text.plainText
+    }
+
+    public var hasRichText: Bool {
+        guard case let .text(text) = content else {
+            return false
+        }
+
+        return text.hasRichText
     }
 }
 
@@ -81,7 +130,7 @@ public struct ClipboardHistory: Sendable {
         sourceAppName: String? = nil
     ) {
         capture(
-            .text(text),
+            .text(ClipboardText(plainText: text)),
             at: capturedAt,
             sourceAppName: sourceAppName
         )
@@ -90,37 +139,107 @@ public struct ClipboardHistory: Sendable {
     public mutating func capture(
         _ content: ClipboardContent,
         at capturedAt: Date = Date(),
-        sourceAppName: String? = nil
+        sourceAppName: String? = nil,
+        sourceAppBundleIdentifier: String? = nil
     ) {
         guard content.shouldStore else {
             return
         }
 
+        let wasPinned = items.first(where: {
+            $0.content == content
+        })?.isPinned ?? false
         items.removeAll { $0.content == content }
         items.insert(
             ClipboardItem(
                 content: content,
                 capturedAt: capturedAt,
-                sourceAppName: sourceAppName
+                sourceAppName: sourceAppName,
+                sourceAppBundleIdentifier: sourceAppBundleIdentifier,
+                isPinned: wasPinned
             ),
             at: 0
         )
 
-        if items.count > limit {
-            items.removeLast(items.count - limit)
+        sortItems()
+        trimUnpinnedItemsToLimit()
+        trimImagesToMemoryLimit()
+    }
+
+    @discardableResult
+    public mutating func remove(id: ClipboardItem.ID) -> Bool {
+        guard let index = items.firstIndex(where: { $0.id == id }) else {
+            return false
         }
 
-        trimImagesToMemoryLimit()
+        items.remove(at: index)
+        return true
+    }
+
+    public mutating func clear() {
+        items.removeAll(keepingCapacity: false)
+    }
+
+    @discardableResult
+    public mutating func togglePin(id: ClipboardItem.ID) -> Bool {
+        guard let index = items.firstIndex(where: { $0.id == id }) else {
+            return false
+        }
+
+        items[index].isPinned.toggle()
+        sortItems()
+        trimUnpinnedItemsToLimit()
+        return true
+    }
+
+    public func search(query: String) -> [ClipboardItem] {
+        let normalizedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedQuery.isEmpty else {
+            return items
+        }
+
+        return items.filter { item in
+            item.text?.localizedCaseInsensitiveContains(normalizedQuery) == true
+                || item.sourceAppName?.localizedCaseInsensitiveContains(
+                    normalizedQuery
+                ) == true
+        }
+    }
+
+    private mutating func sortItems() {
+        items.sort { lhs, rhs in
+            if lhs.isPinned != rhs.isPinned {
+                return lhs.isPinned
+            }
+            return lhs.capturedAt > rhs.capturedAt
+        }
+    }
+
+    private mutating func trimUnpinnedItemsToLimit() {
+        while items.lazy.filter({ !$0.isPinned }).count > limit {
+            guard let oldestUnpinnedIndex = items.lastIndex(where: {
+                !$0.isPinned
+            }) else {
+                return
+            }
+            items.remove(at: oldestUnpinnedIndex)
+        }
     }
 
     private mutating func trimImagesToMemoryLimit() {
         while totalImageBytes > maximumTotalImageBytes {
-            guard let oldestImageIndex = items.lastIndex(where: {
+            let oldestImageIndex = items.lastIndex(where: {
+                if case .image = $0.content, !$0.isPinned {
+                    return true
+                }
+                return false
+            }) ?? items.lastIndex(where: {
                 if case .image = $0.content {
                     return true
                 }
                 return false
-            }) else {
+            })
+            guard let oldestImageIndex else {
                 return
             }
 
@@ -141,7 +260,7 @@ private extension ClipboardContent {
     var shouldStore: Bool {
         switch self {
         case let .text(text):
-            text.contains(where: { !$0.isWhitespace })
+            text.plainText.contains(where: { !$0.isWhitespace })
         case let .image(image):
             !image.data.isEmpty
         }

@@ -9,6 +9,7 @@ struct PilpApp: App {
         MenuBarExtra("Pilp", systemImage: "clipboard") {
             ClipboardMenuView(
                 model: appDelegate.model,
+                privacySettings: appDelegate.privacySettings,
                 updater: appDelegate.updater,
                 onShowPicker: appDelegate.overlayController.show
             )
@@ -19,6 +20,8 @@ struct PilpApp: App {
             PilpSettingsView(
                 commandVSettings: appDelegate.commandVSettings,
                 shortcutSettings: appDelegate.shortcutSettings,
+                privacySettings: appDelegate.privacySettings,
+                launchAtLoginSettings: appDelegate.launchAtLoginSettings,
                 updater: appDelegate.updater
             )
         }

@@ -4,9 +4,12 @@ import SwiftUI
 
 struct ClipboardOverlayView: View {
     @ObservedObject var model: ClipboardModel
+    @ObservedObject var session: ClipboardOverlaySession
+    let onCommit: (ClipboardPasteMode) -> Void
     let onDismiss: () -> Void
 
     @FocusState private var receivesKeyboardInput: Bool
+    @FocusState private var searchReceivesKeyboardInput: Bool
 
     var body: some View {
         VStack(spacing: 0) {
@@ -41,9 +44,18 @@ struct ClipboardOverlayView: View {
         .focusEffectDisabled()
         .focused($receivesKeyboardInput)
         .onAppear {
-            DispatchQueue.main.async {
-                receivesKeyboardInput = true
+            receivesKeyboardInput = true
+        }
+        .onChange(of: session.keyboardFocusRequest) {
+            searchReceivesKeyboardInput = false
+            receivesKeyboardInput = true
+        }
+        .onChange(of: session.searchFocusRequest) {
+            guard model.shouldShowSearch else {
+                return
             }
+            receivesKeyboardInput = false
+            searchReceivesKeyboardInput = true
         }
         .onKeyPress(.leftArrow) {
             DispatchQueue.main.async {
@@ -57,8 +69,16 @@ struct ClipboardOverlayView: View {
             }
             return .handled
         }
-        .onKeyPress(.return) {
-            copyAndDismiss()
+        .onKeyPress(.return, phases: .down) { keyPress in
+            copyAndDismiss(
+                mode: keyPress.modifiers.contains(.shift)
+                    ? .original
+                    : .plain
+            )
+            return .handled
+        }
+        .onKeyPress(.delete) {
+            _ = model.removeSelectedItem()
             return .handled
         }
         .onExitCommand(perform: onDismiss)
@@ -75,9 +95,41 @@ struct ClipboardOverlayView: View {
                 .frame(width: 40, height: 5)
 
             HStack(spacing: 10) {
-                Image(systemName: "rectangle.stack.fill")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(.black.opacity(0.88))
+                Image(nsImage: NSApplication.shared.applicationIconImage)
+                    .resizable()
+                    .interpolation(.high)
+                    .frame(width: 22, height: 22)
+
+                Spacer()
+
+                if model.shouldShowSearch {
+                    TextField(
+                        L10n.text("history.search.placeholder"),
+                        text: $model.searchQuery
+                    )
+                    .textFieldStyle(.plain)
+                    .focused($searchReceivesKeyboardInput)
+                    .onSubmit {
+                        searchReceivesKeyboardInput = false
+                        receivesKeyboardInput = true
+                    }
+                    .onExitCommand {
+                        if model.searchQuery.isEmpty {
+                            searchReceivesKeyboardInput = false
+                            receivesKeyboardInput = true
+                        } else {
+                            model.searchQuery = ""
+                        }
+                    }
+                    .font(.system(size: 13, weight: .medium))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(
+                        .white.opacity(0.55),
+                        in: Capsule()
+                    )
+                    .frame(width: 220)
+                }
 
                 Spacer()
 
@@ -106,7 +158,11 @@ struct ClipboardOverlayView: View {
 
                 ClipboardRibbonCard(
                     item: item,
-                    isSelected: isSelected
+                    isSelected: isSelected,
+                    onTogglePin: {
+                        model.togglePin(id: item.id)
+                        receivesKeyboardInput = true
+                    }
                 )
                 .frame(
                     width: isSelected ? 260 : 160,
@@ -132,10 +188,18 @@ struct ClipboardOverlayView: View {
                 .font(.system(size: 30, weight: .medium))
                 .foregroundStyle(.black.opacity(0.34))
 
-            Text(L10n.text("overlay.empty.title"))
+            Text(
+                model.totalItemCount == 0
+                    ? L10n.text("overlay.empty.title")
+                    : L10n.text("history.search.empty")
+            )
                 .font(.system(size: 18, weight: .semibold))
 
-            Text(L10n.text("overlay.empty.description"))
+            Text(
+                model.totalItemCount == 0
+                    ? L10n.text("overlay.empty.description")
+                    : L10n.text("history.search.empty_description")
+            )
                 .font(.system(size: 13))
                 .foregroundStyle(.secondary)
         }
@@ -144,36 +208,45 @@ struct ClipboardOverlayView: View {
 
     private var footer: some View {
         ZStack {
-            HStack(spacing: 34) {
+            HStack(spacing: 16) {
                 ShortcutHint(keys: "← →", label: L10n.text("overlay.move"))
-                ShortcutHint(keys: "↵", label: L10n.text("overlay.copy"))
+                ShortcutHint(
+                    keys: "↵",
+                    label: L10n.text("paste.plain")
+                )
+                if model.selectedItem?.hasRichText == true {
+                    ShortcutHint(
+                        keys: "⇧ ↵",
+                        label: L10n.text("paste.original")
+                    )
+                }
+                ShortcutHint(keys: "⌫", label: L10n.text("history.delete"))
                 ShortcutHint(keys: "esc", label: L10n.text("overlay.close"))
             }
 
             HStack {
                 Spacer(minLength: 0)
 
-                Text(L10n.text("overlay.then_paste"))
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.black.opacity(0.42))
+                if !session.isDirectPasteAvailable {
+                    Text(L10n.text("overlay.then_paste"))
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.black.opacity(0.42))
+                }
             }
         }
         .padding(.horizontal, 28)
         .frame(height: 62)
     }
 
-    private func copyAndDismiss() {
-        guard model.copySelectedItem() else {
-            return
-        }
-
-        onDismiss()
+    private func copyAndDismiss(mode: ClipboardPasteMode) {
+        onCommit(mode)
     }
 }
 
 private struct ClipboardRibbonCard: View {
     let item: ClipboardItem
     let isSelected: Bool
+    let onTogglePin: () -> Void
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -186,6 +259,32 @@ private struct ClipboardRibbonCard: View {
                 .padding(.vertical, 5)
                 .background(.black.opacity(0.78), in: Capsule())
                 .padding(12)
+
+            if item.hasRichText {
+                Text(L10n.text("content.text.original_badge"))
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .foregroundStyle(.black.opacity(0.7))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.white.opacity(0.75), in: Capsule())
+                    .padding(.top, 46)
+                    .padding(.leading, 12)
+            }
+
+            HStack {
+                Spacer()
+                Button(action: onTogglePin) {
+                    Image(systemName: item.isPinned ? "pin.fill" : "pin")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(
+                            item.isPinned ? Color.orange : Color.black.opacity(0.48)
+                        )
+                        .padding(7)
+                        .background(.ultraThinMaterial, in: Circle())
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(12)
 
             VStack {
                 Spacer()
@@ -235,7 +334,7 @@ private struct ClipboardRibbonCard: View {
     private var cardContent: some View {
         switch item.content {
         case let .text(text):
-            Text(text)
+            Text(text.plainText)
                 .font(.system(
                     size: isSelected ? 17 : 14,
                     weight: .medium

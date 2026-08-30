@@ -6,10 +6,12 @@ final class FirstLaunchWindowController: NSWindowController {
     init(
         commandVSettings: CommandVHoldSettings,
         shortcutSettings: ShortcutSettings,
+        privacySettings: ClipboardPrivacySettings,
+        launchAtLoginSettings: LaunchAtLoginSettings,
         updater: AppUpdater
     ) {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 520, height: 690),
+            contentRect: NSRect(x: 0, y: 0, width: 560, height: 760),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -20,6 +22,8 @@ final class FirstLaunchWindowController: NSWindowController {
             rootView: PilpSettingsView(
                 commandVSettings: commandVSettings,
                 shortcutSettings: shortcutSettings,
+                privacySettings: privacySettings,
+                launchAtLoginSettings: launchAtLoginSettings,
                 updater: updater
             )
         )

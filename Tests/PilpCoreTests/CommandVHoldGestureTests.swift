@@ -30,4 +30,45 @@ struct CommandVHoldGestureTests {
         #expect(gesture.holdThresholdReached() == .none)
         #expect(gesture.keyUp() == .none)
     }
+
+    @Test("granting permission after launch starts the listener")
+    func permissionGrantedAfterLaunchStartsListener() {
+        var activation = CommandVActivationState(
+            isEnabled: true,
+            isPermissionGranted: false
+        )
+
+        #expect(activation.action == .waitForPermission)
+        #expect(
+            activation.refreshPermission(isGranted: true)
+                == .startMonitoring
+        )
+        activation.monitoringDidStart(succeeded: true)
+        #expect(activation.action == .monitoring)
+    }
+
+    @Test("revoking permission stops an active listener")
+    func revokedPermissionStopsListener() {
+        var activation = CommandVActivationState(
+            isEnabled: true,
+            isPermissionGranted: true
+        )
+        activation.monitoringDidStart(succeeded: true)
+
+        #expect(
+            activation.refreshPermission(isGranted: false)
+                == .stopMonitoring
+        )
+        #expect(activation.action == .waitForPermission)
+    }
+
+    @Test("enabling the gesture starts a listener when access exists")
+    func enablingStartsListenerWhenAllowed() {
+        var activation = CommandVActivationState(
+            isEnabled: false,
+            isPermissionGranted: true
+        )
+
+        #expect(activation.setEnabled(true) == .startMonitoring)
+    }
 }

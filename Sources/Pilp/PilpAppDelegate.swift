@@ -9,15 +9,20 @@ final class PilpAppDelegate: NSObject, NSApplicationDelegate {
     let overlayController: ClipboardOverlayController
     let commandVSettings: CommandVHoldSettings
     let shortcutSettings: ShortcutSettings
+    let privacySettings: ClipboardPrivacySettings
+    let launchAtLoginSettings: LaunchAtLoginSettings
     let updater: AppUpdater
     private var firstLaunchWindowController: FirstLaunchWindowController?
 
     override init() {
-        let model = ClipboardModel()
+        let privacySettings = ClipboardPrivacySettings()
+        let model = ClipboardModel(privacySettings: privacySettings)
         let overlayController = ClipboardOverlayController(model: model)
         let updater = AppUpdater()
         self.model = model
         self.overlayController = overlayController
+        self.privacySettings = privacySettings
+        self.launchAtLoginSettings = LaunchAtLoginSettings()
         self.updater = updater
         self.commandVSettings = CommandVHoldSettings {
             overlayController.show()
@@ -67,6 +72,8 @@ final class PilpAppDelegate: NSObject, NSApplicationDelegate {
             let controller = FirstLaunchWindowController(
                 commandVSettings: commandVSettings,
                 shortcutSettings: shortcutSettings,
+                privacySettings: privacySettings,
+                launchAtLoginSettings: launchAtLoginSettings,
                 updater: updater
             )
             firstLaunchWindowController = controller
@@ -76,5 +83,6 @@ final class PilpAppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidBecomeActive(_ notification: Notification) {
         commandVSettings.refreshPermissionStatus()
+        launchAtLoginSettings.refresh()
     }
 }

@@ -2,7 +2,9 @@
 
 "content.text" = "Text";
 "content.image" = "Image";
-"content.text.badge" = "TEXT";
+"content.text.badge" = "PLAIN";
+"content.text.rich" = "PLAIN + ORIGINAL";
+"content.text.original_badge" = "ORIGINAL";
 "content.image.badge" = "IMAGE";
 "preview.unavailable" = "Preview unavailable";
 "clips.empty.title" = "No clips yet";
@@ -14,11 +16,34 @@
 "menu.settings" = "Settings";
 "menu.quit" = "Quit";
 
+"paste.plain" = "Plain";
+"paste.original" = "Original";
+"history.delete" = "Delete";
+"history.clear" = "Clear All";
+"history.clear.confirmation" = "Clear all clipboard history?";
+"history.pin" = "Pin";
+"history.unpin" = "Unpin";
+"history.search.placeholder" = "Search clips";
+"history.search.empty" = "No matching clips";
+"history.search.empty_description" = "Try another word or app name.";
+
+"privacy.pause_five_minutes" = "Pause for 5 min";
+"privacy.resume" = "Resume";
+"privacy.resume_countdown" = "Resume (%d sec)";
+"privacy.paused_countdown" = "Capture paused for %d more seconds";
+"privacy.capture_active" = "Clipboard capture is active";
+"privacy.excluded_apps" = "Excluded apps";
+"privacy.add_app" = "Add App…";
+"privacy.no_excluded_apps" = "No apps are excluded.";
+"privacy.choose_app" = "Choose an app Pilp should ignore";
+"privacy.exclude" = "Exclude";
+
 "overlay.position_format" = "%1$d of %2$d";
 "overlay.empty.title" = "Copy something first";
 "overlay.empty.description" = "Text and images copied while Pilp is running appear here.";
 "overlay.move" = "Move";
 "overlay.copy" = "Copy";
+"overlay.paste" = "Paste";
 "overlay.close" = "Close";
 "overlay.then_paste" = "then ⌘V";
 
@@ -30,13 +55,19 @@
 "settings.step.pick.title" = "Pick";
 "settings.step.pick.detail" = "Hold ⌘V, then move with ← →.";
 "settings.step.paste.title" = "Paste";
-"settings.step.paste.detail" = "Press Return, then ⌘V.";
+"settings.step.paste.detail" = "Return pastes plain text. Shift-Return preserves the original formatting.";
 "settings.picker_controls.title" = "Open the picker";
 "settings.picker_controls.description" = "Hold ⌘V or use a custom shortcut from any app.";
 "settings.command_v.toggle" = "Hold ⌘V to open the picker";
-"settings.command_v.permission" = "Accessibility access lets Pilp distinguish a quick paste from a hold.";
+"settings.command_v.permission" = "Without Pilp access, macOS key repeat can paste the same item more than once. Enable Pilp under Device Control & Data Access.";
 "settings.command_v.allow" = "Allow Access";
 "settings.shortcut.custom" = "Custom shortcut";
+"settings.general.title" = "General";
+"settings.general.description" = "Keep Pilp ready without opening it by hand.";
+"settings.launch_at_login" = "Launch Pilp at login";
+"settings.launch_at_login.requires_approval" = "Allow Pilp under System Settings → General → Login Items.";
+"settings.privacy.title" = "Privacy";
+"settings.privacy.description" = "Pause capture temporarily or ignore clipboard changes from selected apps.";
 "settings.updates.title" = "Updates";
 "settings.updates.description" = "Stay current without downloading Pilp again by hand.";
 "settings.updates.auto_check" = "Automatically check for updates";
@@ -44,7 +75,7 @@
 "settings.updates.verified" = "Downloaded updates are verified before installation.";
 "settings.updates.check_now" = "Check Now";
 "settings.updates.check_help" = "Check GitHub Releases for a newer version of Pilp";
-"settings.privacy" = "Clipboard history stays in memory on this Mac and clears when Pilp quits. The hold gesture filters only ⌘V events. Update checks only contact the Pilp release feed.";
+"settings.privacy" = "Clipboard history, pins, searches, and rich text stay in memory on this Mac and clear when Pilp quits. Only the pause time and excluded app list are saved. Update checks only contact the Pilp release feed.";
 
 "shortcut.not_set" = "Not set";
 "shortcut.recording" = "Press shortcut…";

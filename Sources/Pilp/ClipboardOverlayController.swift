@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import PilpCore
 import SwiftUI
 
@@ -8,6 +9,8 @@ final class ClipboardOverlayController {
     private static let frameAutosaveName = "PilpClipboardOverlay"
 
     private let model: ClipboardModel
+    private let session = ClipboardOverlaySession()
+    private let directPastePerformer = DirectPastePerformer()
     private var panel: PilpOverlayPanel?
 
     init(model: ClipboardModel) {
@@ -24,10 +27,15 @@ final class ClipboardOverlayController {
 
     func show() {
         let panel = panel ?? makePanel()
+        session.prepareForPresentation(
+            isDirectPasteAvailable: directPastePerformer.isAvailable
+        )
         panel.orderFrontRegardless()
-        DispatchQueue.main.async {
-            panel.makeKey()
+        panel.makeKey()
+        if let contentView = panel.contentViewController?.view {
+            panel.makeFirstResponder(contentView)
         }
+        session.requestKeyboardFocus()
     }
 
     func hide() {
@@ -57,9 +65,16 @@ final class ClipboardOverlayController {
         panel.backgroundColor = .clear
         panel.isOpaque = false
         panel.hasShadow = false
+        panel.onFind = { [weak session] in
+            session?.requestSearchFocus()
+        }
         panel.contentViewController = NSHostingController(
             rootView: ClipboardOverlayView(
                 model: model,
+                session: session,
+                onCommit: { [weak self] mode in
+                    self?.commitSelection(mode: mode)
+                },
                 onDismiss: { [weak self] in
                     self?.hide()
                 }
@@ -75,6 +90,23 @@ final class ClipboardOverlayController {
 
         self.panel = panel
         return panel
+    }
+
+    private func commitSelection(mode: ClipboardPasteMode) {
+        let action = PickerCommitPolicy.action(
+            copySucceeded: model.copySelectedItem(mode: mode),
+            isDirectPasteAvailable: directPastePerformer.isAvailable
+        )
+
+        switch action {
+        case .none:
+            return
+        case .copyOnly:
+            hide()
+        case .copyAndPaste:
+            hide()
+            directPastePerformer.pasteAfterOverlayDismissal()
+        }
     }
 
     private func positionAtBottom(_ panel: NSPanel) {
@@ -96,7 +128,45 @@ final class ClipboardOverlayController {
     }
 }
 
+@MainActor
+final class ClipboardOverlaySession: ObservableObject {
+    @Published private(set) var keyboardFocusRequest = 0
+    @Published private(set) var searchFocusRequest = 0
+    @Published private(set) var isDirectPasteAvailable = false
+
+    func prepareForPresentation(isDirectPasteAvailable: Bool) {
+        self.isDirectPasteAvailable = isDirectPasteAvailable
+    }
+
+    func requestKeyboardFocus() {
+        keyboardFocusRequest &+= 1
+    }
+
+    func requestSearchFocus() {
+        searchFocusRequest &+= 1
+    }
+}
+
 private final class PilpOverlayPanel: NSPanel {
+    var onFind: (() -> Void)?
+
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
+
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        let relevantModifiers = event.modifierFlags.intersection([
+            .command,
+            .shift,
+            .option,
+            .control
+        ])
+        if relevantModifiers == .command,
+            event.charactersIgnoringModifiers?.lowercased() == "f"
+        {
+            onFind?()
+            return true
+        }
+
+        return super.performKeyEquivalent(with: event)
+    }
 }

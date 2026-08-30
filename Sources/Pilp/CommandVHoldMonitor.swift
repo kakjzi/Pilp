@@ -3,8 +3,6 @@ import Foundation
 import PilpCore
 
 final class CommandVHoldMonitor {
-    private static let pasteKeyCode: CGKeyCode = 9
-    private static let syntheticEventMarker: Int64 = 0x50494C50
     private static let holdDelay: TimeInterval = 0.45
 
     private let onLongPress: () -> Void
@@ -91,7 +89,7 @@ final class CommandVHoldMonitor {
         }
 
         if event.getIntegerValueField(.eventSourceUserData)
-            == Self.syntheticEventMarker
+            == CommandVEvent.syntheticEventMarker
         {
             return Unmanaged.passUnretained(event)
         }
@@ -99,7 +97,7 @@ final class CommandVHoldMonitor {
         let keyCode = CGKeyCode(
             event.getIntegerValueField(.keyboardEventKeycode)
         )
-        guard keyCode == Self.pasteKeyCode else {
+        guard keyCode == CommandVEvent.pasteKeyCode else {
             return Unmanaged.passUnretained(event)
         }
 
@@ -172,26 +170,7 @@ final class CommandVHoldMonitor {
     }
 
     private func postCommandV() {
-        let source = CGEventSource(stateID: .combinedSessionState)
-        let keyDown = CGEvent(
-            keyboardEventSource: source,
-            virtualKey: Self.pasteKeyCode,
-            keyDown: true
-        )
-        let keyUp = CGEvent(
-            keyboardEventSource: source,
-            virtualKey: Self.pasteKeyCode,
-            keyDown: false
-        )
-
-        for event in [keyDown, keyUp].compactMap({ $0 }) {
-            event.flags = .maskCommand
-            event.setIntegerValueField(
-                .eventSourceUserData,
-                value: Self.syntheticEventMarker
-            )
-            event.post(tap: .cgAnnotatedSessionEventTap)
-        }
+        CommandVEvent.post()
     }
 
     private func eventMask(for type: CGEventType) -> CGEventMask {

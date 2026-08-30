@@ -1,24 +1,33 @@
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct PilpSettingsView: View {
     @ObservedObject var commandVSettings: CommandVHoldSettings
     @ObservedObject var shortcutSettings: ShortcutSettings
+    @ObservedObject var privacySettings: ClipboardPrivacySettings
+    @ObservedObject var launchAtLoginSettings: LaunchAtLoginSettings
     @ObservedObject var updater: AppUpdater
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            title
-            gettingStartedSection
-            Divider()
-            shortcutSection
-            Divider()
-            updatesSection
-            Divider()
-            privacyNote
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                title
+                gettingStartedSection
+                Divider()
+                shortcutSection
+                Divider()
+                generalSection
+                Divider()
+                privacySection
+                Divider()
+                updatesSection
+                Divider()
+                privacyNote
+            }
+            .padding(24)
         }
-        .padding(24)
-        .frame(width: 520)
+        .frame(width: 560, height: 720)
     }
 
     private var gettingStartedSection: some View {
@@ -165,6 +174,114 @@ struct PilpSettingsView: View {
         }
     }
 
+    private var generalSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            SettingsSectionHeader(
+                title: L10n.text("settings.general.title"),
+                description: L10n.text("settings.general.description")
+            )
+
+            Toggle(
+                L10n.text("settings.launch_at_login"),
+                isOn: Binding(
+                    get: { launchAtLoginSettings.isEnabled },
+                    set: { launchAtLoginSettings.setEnabled($0) }
+                )
+            )
+
+            if let errorMessage = launchAtLoginSettings.errorMessage {
+                Label(errorMessage, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+        }
+    }
+
+    private var privacySection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            SettingsSectionHeader(
+                title: L10n.text("settings.privacy.title"),
+                description: L10n.text("settings.privacy.description")
+            )
+
+            HStack {
+                Label(
+                    privacySettings.isPaused
+                        ? L10n.format(
+                            "privacy.paused_countdown",
+                            privacySettings.remainingPauseSeconds
+                        )
+                        : L10n.text("privacy.capture_active"),
+                    systemImage: privacySettings.isPaused
+                        ? "pause.circle.fill"
+                        : "checkmark.shield.fill"
+                )
+                .foregroundStyle(privacySettings.isPaused ? .orange : .green)
+
+                Spacer()
+
+                Button(
+                    privacySettings.isPaused
+                        ? L10n.text("privacy.resume")
+                        : L10n.text("privacy.pause_five_minutes")
+                ) {
+                    if privacySettings.isPaused {
+                        privacySettings.resume()
+                    } else {
+                        privacySettings.pauseForFiveMinutes()
+                    }
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(L10n.text("privacy.excluded_apps"))
+                        .font(.subheadline.weight(.semibold))
+
+                    Spacer()
+
+                    Button(L10n.text("privacy.add_app")) {
+                        chooseExcludedApplication()
+                    }
+                }
+
+                if privacySettings.excludedApplications.isEmpty {
+                    Text(L10n.text("privacy.no_excluded_apps"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(privacySettings.excludedApplications) { application in
+                        HStack {
+                            Image(systemName: "app.dashed")
+                                .foregroundStyle(.secondary)
+
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(application.name)
+                                Text(application.bundleIdentifier)
+                                    .font(.caption2.monospaced())
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Spacer()
+
+                            Button(role: .destructive) {
+                                privacySettings.removeApplication(
+                                    id: application.id
+                                )
+                            } label: {
+                                Image(systemName: "minus.circle.fill")
+                            }
+                            .buttonStyle(.borderless)
+                        }
+                        .padding(.vertical, 3)
+                    }
+                }
+            }
+            .padding(12)
+            .background(.quaternary, in: RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
     private var privacyNote: some View {
         Label {
             Text(L10n.text("settings.privacy"))
@@ -174,6 +291,24 @@ struct PilpSettingsView: View {
         .font(.caption)
         .foregroundStyle(.secondary)
         .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func chooseExcludedApplication() {
+        let panel = NSOpenPanel()
+        panel.title = L10n.text("privacy.choose_app")
+        panel.prompt = L10n.text("privacy.exclude")
+        panel.directoryURL = URL(fileURLWithPath: "/Applications")
+        panel.allowedContentTypes = [.applicationBundle]
+        panel.allowsMultipleSelection = false
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+
+        panel.begin { response in
+            guard response == .OK, let url = panel.url else {
+                return
+            }
+            _ = privacySettings.addApplication(at: url)
+        }
     }
 }
 

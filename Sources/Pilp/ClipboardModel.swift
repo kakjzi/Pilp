@@ -6,20 +6,29 @@ import PilpCore
 final class ClipboardModel: NSObject, ObservableObject {
     @Published private(set) var items: [ClipboardItem] = []
     @Published private var selection = ClipboardSelection()
+    @Published var searchQuery = "" {
+        didSet {
+            selection.reset()
+            refreshVisibleItems()
+        }
+    }
 
     private static let maximumImageBytes = 20 * 1_024 * 1_024
     private static let maximumTotalImageBytes = 80 * 1_024 * 1_024
+    private static let maximumRichTextBytes = 2 * 1_024 * 1_024
 
     private let pasteboard: NSPasteboard
     private var history: ClipboardHistory
     private var tracker: ClipboardChangeTracker
-    private let sourceAppNameProvider: () -> String?
+    private let privacySettings: ClipboardPrivacySettings
+    private let sourceApplicationProvider: () -> ClipboardSourceApplication?
     private var timer: Timer?
 
     init(
         pasteboard: NSPasteboard = .general,
         historyLimit: Int = 10,
-        sourceAppNameProvider: @escaping () -> String? = {
+        privacySettings: ClipboardPrivacySettings,
+        sourceApplicationProvider: @escaping () -> ClipboardSourceApplication? = {
             guard
                 let app = NSWorkspace.shared.frontmostApplication,
                 app.bundleIdentifier != Bundle.main.bundleIdentifier
@@ -27,7 +36,10 @@ final class ClipboardModel: NSObject, ObservableObject {
                 return nil
             }
 
-            return app.localizedName
+            return ClipboardSourceApplication(
+                name: app.localizedName,
+                bundleIdentifier: app.bundleIdentifier
+            )
         }
     ) {
         self.pasteboard = pasteboard
@@ -38,7 +50,8 @@ final class ClipboardModel: NSObject, ObservableObject {
         self.tracker = ClipboardChangeTracker(
             initialChangeCount: pasteboard.changeCount
         )
-        self.sourceAppNameProvider = sourceAppNameProvider
+        self.privacySettings = privacySettings
+        self.sourceApplicationProvider = sourceApplicationProvider
 
         super.init()
 
@@ -64,6 +77,14 @@ final class ClipboardModel: NSObject, ObservableObject {
         selectedItem == nil ? 0 : selection.index + 1
     }
 
+    var totalItemCount: Int {
+        history.items.count
+    }
+
+    var shouldShowSearch: Bool {
+        totalItemCount >= 6 || !searchQuery.isEmpty
+    }
+
     var ribbonItems: [ClipboardItem] {
         selection.centeredIndices(
             maximumCount: 5,
@@ -84,7 +105,44 @@ final class ClipboardModel: NSObject, ObservableObject {
     }
 
     @discardableResult
-    func copySelectedItem() -> Bool {
+    func removeSelectedItem() -> Bool {
+        guard let selectedItem else {
+            return false
+        }
+
+        let didRemove = history.remove(id: selectedItem.id)
+        refreshVisibleItems()
+        selection.move(by: 0, itemCount: items.count)
+        return didRemove
+    }
+
+    func clearHistory() {
+        history.clear()
+        searchQuery = ""
+        selection.reset()
+        refreshVisibleItems()
+    }
+
+    @discardableResult
+    func togglePinSelectedItem() -> Bool {
+        guard let selectedItem else {
+            return false
+        }
+
+        let didToggle = history.togglePin(id: selectedItem.id)
+        refreshVisibleItems(selecting: selectedItem.id)
+        return didToggle
+    }
+
+    func togglePin(id: ClipboardItem.ID) {
+        guard history.togglePin(id: id) else {
+            return
+        }
+        refreshVisibleItems(selecting: id)
+    }
+
+    @discardableResult
+    func copySelectedItem(mode: ClipboardPasteMode = .plain) -> Bool {
         guard let selectedItem else {
             return false
         }
@@ -94,7 +152,7 @@ final class ClipboardModel: NSObject, ObservableObject {
         let didWrite: Bool
         switch selectedItem.content {
         case let .text(text):
-            didWrite = pasteboard.setString(text, forType: .string)
+            didWrite = write(text: text, mode: mode)
         case let .image(image):
             didWrite = pasteboard.setData(
                 image.data,
@@ -111,26 +169,42 @@ final class ClipboardModel: NSObject, ObservableObject {
 
     @objc
     private func pollPasteboard() {
-        let content: ClipboardContent? = tracker.capture(
+        let candidate: ClipboardCaptureCandidate? = tracker.capture(
             changeCount: pasteboard.changeCount,
-            value: readClipboardContent()
+            value: makeCaptureCandidate()
         )
 
-        guard let content else {
+        guard let candidate else {
             return
         }
 
         history.capture(
-            content,
-            sourceAppName: sourceAppNameProvider()
+            candidate.content,
+            sourceAppName: candidate.sourceApplication?.name,
+            sourceAppBundleIdentifier: candidate.sourceApplication?.bundleIdentifier
         )
-        items = history.items
+        refreshVisibleItems()
         selection.reset()
+    }
+
+    private func makeCaptureCandidate() -> ClipboardCaptureCandidate? {
+        let sourceApplication = sourceApplicationProvider()
+        guard
+            privacySettings.allowsCapture(from: sourceApplication),
+            let content = readClipboardContent()
+        else {
+            return nil
+        }
+
+        return ClipboardCaptureCandidate(
+            content: content,
+            sourceApplication: sourceApplication
+        )
     }
 
     private func readClipboardContent() -> ClipboardContent? {
         guard let type = pasteboard.availableType(
-            from: [.png, .tiff, .string]
+            from: [.png, .tiff, .string, .rtf, .html]
         ) else {
             return nil
         }
@@ -140,11 +214,101 @@ final class ClipboardModel: NSObject, ObservableObject {
             return imageContent(for: .png, format: .png)
         case .tiff:
             return imageContent(for: .tiff, format: .tiff)
-        case .string:
-            return pasteboard.string(forType: .string).map(ClipboardContent.text)
+        case .string, .rtf, .html:
+            return textContent()
         default:
             return nil
         }
+    }
+
+    private func textContent() -> ClipboardContent? {
+        let rtfData = limitedRichTextData(for: .rtf, remainingBytes: nil)
+        let htmlData = limitedRichTextData(
+            for: .html,
+            remainingBytes: Self.maximumRichTextBytes - (rtfData?.count ?? 0)
+        )
+        let plainText = pasteboard.string(forType: .string)
+            ?? plainText(from: rtfData, documentType: .rtf)
+            ?? plainText(from: htmlData, documentType: .html)
+
+        guard let plainText else {
+            return nil
+        }
+
+        return .text(ClipboardText(
+            plainText: plainText,
+            rtfData: rtfData,
+            htmlData: htmlData
+        ))
+    }
+
+    private func limitedRichTextData(
+        for type: NSPasteboard.PasteboardType,
+        remainingBytes: Int?
+    ) -> Data? {
+        let limit = min(
+            Self.maximumRichTextBytes,
+            max(0, remainingBytes ?? Self.maximumRichTextBytes)
+        )
+        guard
+            limit > 0,
+            let data = pasteboard.data(forType: type),
+            data.count <= limit
+        else {
+            return nil
+        }
+        return data
+    }
+
+    private func plainText(
+        from data: Data?,
+        documentType: NSAttributedString.DocumentType
+    ) -> String? {
+        guard let data else {
+            return nil
+        }
+        return try? NSAttributedString(
+            data: data,
+            options: [.documentType: documentType],
+            documentAttributes: nil
+        ).string
+    }
+
+    private func write(
+        text: ClipboardText,
+        mode: ClipboardPasteMode
+    ) -> Bool {
+        let representations = text.representations(for: mode)
+        guard representations.hasRichText else {
+            return pasteboard.setString(
+                representations.plainText,
+                forType: .string
+            )
+        }
+
+        let item = NSPasteboardItem()
+        item.setString(representations.plainText, forType: .string)
+        if let rtfData = representations.rtfData {
+            item.setData(rtfData, forType: .rtf)
+        }
+        if let htmlData = representations.htmlData {
+            item.setData(htmlData, forType: .html)
+        }
+        return pasteboard.writeObjects([item])
+    }
+
+    private func refreshVisibleItems(
+        selecting selectedID: ClipboardItem.ID? = nil
+    ) {
+        items = history.search(query: searchQuery)
+        guard
+            let selectedID,
+            let index = items.firstIndex(where: { $0.id == selectedID })
+        else {
+            selection.move(by: 0, itemCount: items.count)
+            return
+        }
+        selection = ClipboardSelection(index: index)
     }
 
     private func imageContent(
@@ -182,6 +346,11 @@ final class ClipboardModel: NSObject, ObservableObject {
 
         return .image(storedImage)
     }
+}
+
+private struct ClipboardCaptureCandidate {
+    let content: ClipboardContent
+    let sourceApplication: ClipboardSourceApplication?
 }
 
 private extension ClipboardImageFormat {
