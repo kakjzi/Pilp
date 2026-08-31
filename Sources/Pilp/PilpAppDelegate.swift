@@ -53,7 +53,10 @@ final class PilpAppDelegate: NSObject, NSApplicationDelegate {
         var firstLaunch = FirstLaunchPresentationState(
             hasPresented: defaults.bool(
                 forKey: Self.hasPresentedFirstLaunchKey
-            )
+            ),
+            requiresPermissionRecovery: commandVSettings.isEnabled
+                && (!commandVSettings.isAccessibilityGranted
+                    || commandVSettings.activationError != nil)
         )
 
         guard firstLaunch.consumePresentation() else {

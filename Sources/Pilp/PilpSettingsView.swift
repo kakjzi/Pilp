@@ -103,6 +103,7 @@ struct PilpSettingsView: View {
 
                     Button(L10n.text("settings.command_v.allow")) {
                         commandVSettings.requestAccessibilityPermission()
+                        commandVSettings.openAccessibilitySettings()
                     }
                 }
             }

@@ -1,3 +1,4 @@
+import AppKit
 import ApplicationServices
 import Combine
 import Foundation
@@ -63,6 +64,16 @@ final class CommandVHoldSettings: ObservableObject {
         ] as CFDictionary
         let isGranted = AXIsProcessTrustedWithOptions(options)
         refreshPermissionStatus(isGranted: isGranted)
+    }
+
+    func openAccessibilitySettings() {
+        guard let url = URL(
+            string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+        ) else {
+            return
+        }
+
+        NSWorkspace.shared.open(url)
     }
 
     func refreshPermissionStatus() {

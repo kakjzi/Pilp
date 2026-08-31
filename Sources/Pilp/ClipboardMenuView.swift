@@ -8,7 +8,7 @@ struct ClipboardMenuView: View {
     @ObservedObject var updater: AppUpdater
     let onShowPicker: () -> Void
 
-    @State private var showsClearConfirmation = false
+    @StateObject private var viewState = ClipboardMenuViewState()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -32,7 +32,7 @@ struct ClipboardMenuView: View {
         .frame(width: 460)
         .confirmationDialog(
             L10n.text("history.clear.confirmation"),
-            isPresented: $showsClearConfirmation
+            isPresented: $viewState.showsClearConfirmation
         ) {
             Button(L10n.text("history.clear"), role: .destructive) {
                 model.clearHistory()
@@ -280,7 +280,7 @@ struct ClipboardMenuView: View {
             Spacer()
 
             Button(role: .destructive) {
-                showsClearConfirmation = true
+                viewState.showsClearConfirmation = true
             } label: {
                 Image(systemName: "trash.slash")
             }
@@ -316,6 +316,11 @@ struct ClipboardMenuView: View {
 
         NSApplication.shared.keyWindow?.orderOut(nil)
     }
+}
+
+@MainActor
+private final class ClipboardMenuViewState: ObservableObject {
+    @Published var showsClearConfirmation = false
 }
 
 private extension ClipboardContent {

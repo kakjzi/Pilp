@@ -59,8 +59,8 @@
 "settings.picker_controls.title" = "Open the picker";
 "settings.picker_controls.description" = "Hold ⌘V or use a custom shortcut from any app.";
 "settings.command_v.toggle" = "Hold ⌘V to open the picker";
-"settings.command_v.permission" = "Without Pilp access, macOS key repeat can paste the same item more than once. Enable Pilp under Device Control & Data Access.";
-"settings.command_v.allow" = "Allow Access";
+"settings.command_v.permission" = "Without Pilp access, macOS key repeat can paste the same item more than once. If Pilp is already enabled but does not work, remove the old entry and add /Applications/Pilp.app again.";
+"settings.command_v.allow" = "Open Settings";
 "settings.shortcut.custom" = "Custom shortcut";
 "settings.general.title" = "General";
 "settings.general.description" = "Keep Pilp ready without opening it by hand.";

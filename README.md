@@ -76,6 +76,16 @@ Pilp는 macOS용 오픈소스 클립보드 선택 도구입니다. 같은 설치
 
 Unsigned Alpha builds are excluded from the Sparkle update feed. Install the first future signed release manually once; automatic updates can continue from signed releases afterward.
 
+Because Alpha builds are ad-hoc signed, macOS may treat an updated build as a new app. If holding `Command-V` starts repeating paste instead of opening Pilp, remove the old Pilp entry from **Privacy & Security → Device Control & Data Access**, add `/Applications/Pilp.app` again, and relaunch Pilp.
+
+## Uninstall and restore macOS paste
+
+1. If enabled, turn off **Launch at Login** in Pilp Settings.
+2. Choose **Quit Pilp** from the menu bar, then move `Pilp.app` to the Trash.
+3. Optionally remove Pilp from **Privacy & Security → Device Control & Data Access**.
+
+The standard macOS `Command-V` behavior returns as soon as Pilp quits. A leftover permission entry is inactive when the app is not running.
+
 ## Next
 
 - Validate app exclusions and Launch at Login across several macOS versions

@@ -23,4 +23,16 @@ struct FirstLaunchPresentationStateTests {
 
         #expect(!shouldPresent)
     }
+
+    @Test("presents settings again when Command-V access needs recovery")
+    func presentsForPermissionRecovery() {
+        var state = FirstLaunchPresentationState(
+            hasPresented: true,
+            requiresPermissionRecovery: true
+        )
+
+        let shouldPresent = state.consumePresentation()
+
+        #expect(shouldPresent)
+    }
 }
