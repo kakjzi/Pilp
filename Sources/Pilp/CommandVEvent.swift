@@ -23,7 +23,7 @@ enum CommandVEvent {
                 .eventSourceUserData,
                 value: syntheticEventMarker
             )
-            event.post(tap: .cgAnnotatedSessionEventTap)
+            event.post(tap: .cghidEventTap)
         }
     }
 }
