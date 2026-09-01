@@ -61,6 +61,9 @@ final class ClipboardOverlayController {
         panel.hidesOnDeactivate = false
         panel.isMovable = true
         panel.isMovableByWindowBackground = true
+        panel.isCenteredSearchVisible = { [weak model] in
+            model?.shouldShowSearch == true
+        }
         panel.animationBehavior = .utilityWindow
         panel.backgroundColor = .clear
         panel.isOpaque = false
@@ -149,9 +152,54 @@ final class ClipboardOverlaySession: ObservableObject {
 
 private final class PilpOverlayPanel: NSPanel {
     var onFind: (() -> Void)?
+    var isCenteredSearchVisible: (() -> Bool)?
+    private var dragStart: (mouseLocation: NSPoint, frameOrigin: NSPoint)?
 
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
+
+    override func sendEvent(_ event: NSEvent) {
+        switch event.type {
+        case .leftMouseDown
+            where OverlayDragRegion.contains(
+                event.locationInWindow,
+                panelSize: frame.size,
+                excludesCenteredSearch: isCenteredSearchVisible?() == true
+            ):
+            dragStart = (
+                convertPoint(toScreen: event.locationInWindow),
+                frame.origin
+            )
+            return
+
+        case .leftMouseDragged:
+            guard let dragStart else {
+                break
+            }
+
+            let mouseLocation = convertPoint(toScreen: event.locationInWindow)
+            setFrameOrigin(NSPoint(
+                x: dragStart.frameOrigin.x
+                    + mouseLocation.x - dragStart.mouseLocation.x,
+                y: dragStart.frameOrigin.y
+                    + mouseLocation.y - dragStart.mouseLocation.y
+            ))
+            return
+
+        case .leftMouseUp:
+            guard dragStart != nil else {
+                break
+            }
+
+            dragStart = nil
+            return
+
+        default:
+            break
+        }
+
+        super.sendEvent(event)
+    }
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         let relevantModifiers = event.modifierFlags.intersection([
